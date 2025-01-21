@@ -4,7 +4,7 @@ typedef struct _Stack stack_t;
 
 /* Returns an instance of a stack. */
 stack_t* create_stack();
-
+ 
 /* Frees the memory where the stack is located. */
 void destroy_stack(stack_t* stack);
 

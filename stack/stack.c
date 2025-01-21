@@ -11,7 +11,7 @@ bool _error_empty_stack(stack_t* stack);
 bool _stack_resize(stack_t* stack, size_t new_size);
 
 typedef unsigned long size_t;
-
+ 
 struct _Stack {
     void** data;
     size_t quantity;
