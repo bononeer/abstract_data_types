@@ -1,110 +1,106 @@
-#include <stdlib.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include "stack.h"
 
 #define INITIAL_SIZE 4
 #define VARIATION_SIZE 2
-#define EMPTY_MSG "The stack is empty\n"
-#define RESIZE_MSG "Failed capacity resize\n"
 
-bool _error_empty_stack(stack_t* stack);
-bool _stack_resize(stack_t* stack, size_t new_size);
+#define INIT_MEMORY_ERR "Not enough memory to initialize Stack.\n"
+#define DESTROY_ERR "Cannot destroy Stack.\n"
+#define EMPTY_ERR "The Stack is empty.\n"
+#define RESIZE_ERR "Not enooug memory to resize Stack.\n"
 
-typedef unsigned long size_t;
- 
-struct _Stack {
-    void** data;
+/******************** static functions declarations ********************/ 
+
+static void stack_empty_error(const Stack stack);
+static void stack_resize(Stack stack, size_t new_size);
+
+/******************** dynamic_stack structure definition ********************/ 
+
+struct dynamic_stack {
+    any_t* data;
     size_t quantity;
     size_t capacity;
 };
 
-stack_t* create_stack() {
-    stack_t* stack = malloc(sizeof(stack_t));
-    if (!stack) return NULL;
+/******************** Stack functions definitions ********************/ 
 
-    void** data = malloc(INITIAL_SIZE * sizeof(void*));
-    if (!data) {
-        free(stack);
-        return NULL;
+Stack create_stack(void) {
+    Stack stack = (Stack)malloc(sizeof(struct dynamic_stack));
+    if (!stack) {
+        fprintf(stderr, INIT_MEMORY_ERR);
+        abort();
     }
 
-    stack->capacity = INITIAL_SIZE;
-    stack->quantity = 0;
+    any_t *data = (any_t*)malloc(INITIAL_SIZE * sizeof(any_t));
+    if (!data) {
+        fprintf(stderr, INIT_MEMORY_ERR);
+        abort();
+    }
+
     stack->data = data;
+    stack->quantity = 0;
+    stack->capacity = INITIAL_SIZE;
 
     return stack;
 }
 
-void destroy_stack(stack_t* stack) {
+void destroy_stack(Stack stack) {
+    if (!stack) {
+        fprintf(stderr, DESTROY_ERR);
+        abort();
+    }
+
     free(stack->data);
     free(stack);
 }
 
-bool stack_is_empty(const stack_t* stack) {
-    return stack->quantity == 0;
+int stack_is_empty(const Stack stack) {
+    return !stack->quantity;
 }
 
-bool stack_push(stack_t* stack, void* value) {
-    bool err = false;
-
+void stack_push(Stack stack, any_t value) {
     if (stack->quantity == stack->capacity) {
-        err = _stack_resize(stack, stack->capacity/VARIATION_SIZE);
+        stack_resize(stack, stack->capacity * VARIATION_SIZE);
     }
-    if (err) return false;
 
-    stack->data[stack->quantity] = value;
-    stack->quantity++;
-
-    return true;
+    stack->data[stack->quantity++] = value;
 }
 
-void* stack_pop(stack_t* stack) {
-    bool err = false;
-    
-    err = _error_empty_stack(stack);
-    if (err) return NULL;
+any_t stack_pop(Stack stack) {
+    stack_empty_error(stack);
 
-    void* deleted = stack->data[stack->quantity-1];
+    any_t top_item = stack->data[--stack->quantity];
 
     if (stack->quantity*4 <= stack->capacity) {
-        err = _stack_resize(stack, stack->capacity/VARIATION_SIZE);
+        stack_resize(stack, stack->capacity / VARIATION_SIZE);
     }
-    if (err) return NULL;
 
-    stack->quantity--;
-
-    return deleted;
+    return top_item;
 }
 
-void* stack_peek(stack_t* stack) {
-    bool err = false;
-    
-    err = _error_empty_stack(stack);
-    if (err) return NULL;
+any_t stack_top(const Stack stack) {
+    stack_empty_error(stack);
 
     return stack->data[stack->quantity-1];
 }
 
-bool _error_empty_stack(stack_t* stack) {
+/******************** static functions definitions ********************/ 
+
+static void stack_empty_error(const Stack stack) {
     if (stack_is_empty(stack)) {
-        fprintf(stderr, EMPTY_MSG);
-        destroy_stack(stack);
-        
-        return true;
+        fprintf(stderr, EMPTY_ERR);
+        abort();
     }
-    return false;
 }
 
-bool _stack_resize(stack_t* stack, size_t new_size) {
-    void** temp_data = realloc(stack->data, new_size);
+static void stack_resize(Stack stack, size_t new_size) {
+    any_t* temp_data = realloc(stack->data, new_size * sizeof(any_t));
     if (!temp_data) {
-        fprintf(stderr, RESIZE_MSG);
-        destroy_stack(stack);
-        
-        return true;
+        fprintf(stderr, RESIZE_ERR);
+        abort();
     }
 
     stack->data = temp_data;
-
-    return false;
+    stack->capacity = new_size;
 }

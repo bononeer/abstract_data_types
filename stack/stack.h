@@ -1,21 +1,29 @@
-#include <stdbool.h>
+#ifndef _STACK_H
+#define _STACK_H
 
-typedef struct _Stack stack_t;
+/******************** Stack structure definition ********************/ 
 
-/* Returns an instance of a stack. */
-stack_t* create_stack();
- 
-/* Frees the memory where the stack is located. */
-void destroy_stack(stack_t* stack);
+typedef struct dynamic_stack* Stack;
+typedef void* any_t;
 
-/* Returns true if `stack` has no values stacked. Returns false in any other case. */
-bool stack_is_empty(const stack_t* stack);
+/******************** Stack functions declarations ********************/
 
-/* Pushes `value` on the top of the stack. Returns void. */
-bool stack_push(stack_t* stack, void* value);
+// Returns a Stack instance.
+Stack create_stack(void);
 
-/* Pops the element on the top of the stack and returns its value. */
-void* stack_pop(stack_t* stack);
+// Frees the space where the stack is located.
+void destroy_stack(Stack stack);
 
-/* Returns the value of the element on top of the stack. */
-void* stack_peek(stack_t* stack);
+// Checks if the stack is empty. Returns 1 if empty, 0 if not.
+int stack_is_empty(const Stack stack);
+
+// Pushes an element onto the stack
+void stack_push(Stack stack, any_t value);
+
+// Pops an element from the stack, and returns its value.
+any_t stack_pop(Stack stack);
+
+// Returns the value of the top element of the stack without removing it.
+any_t stack_top(const Stack stack);
+
+#endif // _STACK_H
