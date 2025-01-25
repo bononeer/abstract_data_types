@@ -1,29 +1,45 @@
 #ifndef _STACK_H
 #define _STACK_H
 
+#include <stdbool.h>
+
 /******************** Stack structure definition ********************/ 
 
-typedef struct dynamic_stack* Stack;
-typedef void* any_t;
+typedef struct stack_t* Stack;
 
 /******************** Stack functions declarations ********************/
 
-// Returns a Stack instance.
-Stack create_stack(void);
+/* Returns an empty stack. 
 
-// Frees the space where the stack is located.
-void destroy_stack(Stack stack);
+POST:
+- If there is not enough memory to allocate the stack, NULL will be returned. */
+Stack stack_create(void); 
 
-// Checks if the stack is empty. Returns 1 if empty, 0 if not.
-int stack_is_empty(const Stack stack);
+/* Frees the memory were the stack is allocated. */
+void stack_destroy(Stack);
 
-// Pushes an element onto the stack
-void stack_push(Stack stack, any_t value);
+/* Returns true if the stack is empty; otherwise, returns false. */
+bool stack_is_empty(const Stack);
 
-// Pops an element from the stack, and returns its value.
-any_t stack_pop(Stack stack);
+/* Pushes an element into the top of the stack. 
 
-// Returns the value of the top element of the stack without removing it.
-any_t stack_top(const Stack stack);
+POST:
+- Returns true if the action was completed successfully; otherwise, returns false. */
+bool stack_push(Stack, void*);
+
+/* Pops the element from the top of the stack and stores its value inside the generic 
+pointer.
+
+POST
+- If the stack is empty or any other error happens, returns false; otherwise, returns
+true */
+bool stack_pop(Stack, void**);
+
+/* Stores the value of the element on the top of the stack inside the pointer.
+
+POST
+- If the stack is empty or any other error happens, returns false; otherwise, returns
+true */
+bool stack_top(const Stack, void**);
 
 #endif // _STACK_H
