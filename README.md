@@ -1,4 +1,4 @@
-# abstract_data_types
+# Abstract Data Types
 
 Interface, implementations and testing for some ADTs in C language.
 
