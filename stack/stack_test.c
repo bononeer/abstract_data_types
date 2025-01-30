@@ -12,7 +12,7 @@ static void print_test(bool, const char*);
 static void test_new_stack(void) {
     printf("TEST: A newly created stack works as expected.\n");
 
-    Stack s = stack_create(sizeof(char));
+    Stack s = stack_create();
 
     print_test(s != NULL, "Create a new stack");
     print_test(stack_is_empty(s), "A newly created stack must be empty");
@@ -23,7 +23,7 @@ static void test_new_stack(void) {
 static void test_stack_one_element(void) {
     printf("TEST: Tries the flow of pushing one element, peeking at the top and popping it out of the stack.\n");
 
-    Stack s = stack_create(sizeof(int));
+    Stack s = stack_create();
 
     int num = 44;
     void* top;
@@ -44,7 +44,7 @@ static void test_stack_one_element(void) {
 static void test_lifo(void) {
     printf("TEST: Verifies that the stack follows the LIFO principle correctly\n");
 
-    Stack s = stack_create(sizeof(float));
+    Stack s = stack_create();
 
     float elements[3] = {0.112358f, 3.14f, 2.71f};
     char test_msg[60];
@@ -70,7 +70,7 @@ static void test_lifo(void) {
 static void test_bulk_lifo(void) {
     printf("TEST: Verifies that the stack follows the LIFO principle correctly even when working with lots of elements\n");
 
-    Stack s = stack_create(sizeof(int));
+    Stack s = stack_create();
     void* top = NULL;
 
     for (int i = 0 ; i < BULK_AMOUNT ; i++) {
@@ -93,7 +93,7 @@ static void test_bulk_lifo(void) {
 static void test_change_pushed_value(void) {
     printf("TEST: Verifies that if the value of a variable that was pushed into a stack is changed, the value inside the stack doesn't change\n");
 
-    Stack s = stack_create(sizeof(char));
+    Stack s = stack_create();
 
     char elem = 'a';
     stack_push(s, &elem);
@@ -111,7 +111,7 @@ static void test_change_pushed_value(void) {
 static void test_charge_stack(void) {
     printf("TEST: Pushes some elements into the stack, pops all of them, and charges it back again to show it works like a newly created stack\n");
 
-    Stack s = stack_create(sizeof(int));
+    Stack s = stack_create();
     bool ok = true;
     void* top = NULL;
 
@@ -144,7 +144,7 @@ static void test_charge_stack(void) {
 static void test_bulk_charge_stack(void) {
     printf("TEST: Pushes a lot of elements into the stack, pops all of them, and charges it back again to check if the stack works correctly with lots of elements\n");
 
-    Stack s = stack_create(sizeof(int));
+    Stack s = stack_create();
     bool ok = true;
     void* top = NULL;
 
@@ -177,7 +177,7 @@ static void test_bulk_charge_stack(void) {
 void test_push_pop(void) {
     printf("TEST: Pushes an element into the stack, pops it and repeats a good amount of times\n");
 
-    Stack s = stack_create(sizeof(int));
+    Stack s = stack_create();
     void* top = NULL;
     int num = 2;
 

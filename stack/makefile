@@ -2,7 +2,6 @@
 CC =gcc
 CFLAGS =-Werror -Wall
 
-# 
 # Change the value of YOUR_FILE for the .c file that uses stack.h
 # Change the value of OUTPUT_FILE for the name of the result compiled file
 YOUR_FILE =stack_test.c
