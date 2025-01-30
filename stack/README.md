@@ -1,15 +1,10 @@
-#ifndef _STACK_H
-#define _STACK_H
+# ADT Stack
 
-#include <stdbool.h>
-#include <stddef.h>
+A simple data structure that follows the LIFO principle - Last In, First Out.
 
-/******************** Stack structure definition ********************/ 
+## Opreations
 
-typedef struct stack_t* Stack;
-
-/******************** Stack functions declarations ********************/
-
+```c
 /* Returns an instance of an empty stack
 
 PRE:
@@ -38,5 +33,10 @@ void* stack_top(const Stack stack);
 
 /* Returns true if the stack is empty; otherwise, it returns false. */
 bool stack_is_empty(const Stack stack);
+```
 
-#endif
+## Compiling
+
+To compile your code run the following line, where `source_file` is the `.c` that needs `stack.h`.
+
+    gcc -o <output_file> <source_file> stack.c
