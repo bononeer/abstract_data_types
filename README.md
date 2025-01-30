@@ -1,37 +1,35 @@
 # Abstract Data Types
 
-Interface and implementations for ADT in C language.
+Interface, implementations and testing for some ADTs in C language.
 
-## Compile 
+The following are the ADTs implemented:
 
-using gcc (extra flags for error detection):
+* Stack
+* Queue
+* List
+* Map
+* SortedMap
+* PriorityQueue
 
-    > gcc -Wall -Werror -Wextra -std=c99 -pedantic main.c <adt>.c -o main
+## Information
 
-## ADT Stack
+Each ADT has its own documentation in their own directory in a README file. You can also read it in the
+`.h` file.
 
-A Data Structure that follows the LIFO (Last-in, First-out) principle.<br>
-You can use the following functions when including "stack.h":
+Every ADT is for generic types, which means you could use it with most C datatypes. However it is mandatory to specify the size of the datatype that will used.
 
-```c
-typedef struct dynamic_stack* Stack;
-typedef void* any_t;
+The file `assert_msg.h` is used for the testing. However, it must always be in the parent directory of any `.c` implementation file because they use them.
 
-// Returns a Stack instance.
-Stack create_stack(void);
+## Testing
 
-// Frees the space where the stack is located.
-void destroy_stack(Stack stack);
+Each ADT directory has it own `_test.c` file that tests their operations, this tests don't depend on the implementation in the `.c` file. This means that with the same `.h` file, you can implement your own version that respects the signatures given.
 
-// Checks if the stack is empty. Returns 1 if empty, 0 if not.
-int stack_is_empty(const Stack stack);
+## Compiling
 
-// Pushes an element onto the stack
-void stack_push(Stack stack, any_t value);
+A makefile is provided in every ADT directory so you can compile your files with the following line:
 
-// Pops an element from the stack, and returns its value.
-any_t stack_pop(Stack stack);
+    make
 
-// Returns the value of the top element of the stack without removing it.
-any_t stack_top(const Stack stack);
-```
+You may change some variables to compile the files like you want.
+
+## License
