@@ -1,11 +1,9 @@
 #include <string.h>
+#include <stdlib.h>
 #include "stack.h"
-#include "../assert_msg.h"
 
 #define INITIAL_SIZE 4
 #define VARIATION_SIZE 2
-#define EMPTY_STACK_ERR "The stack is empty"
-#define MEM_ELEM_ERR "Not enough memory for the element"
 
 /******************** structure definition ********************/ 
 
@@ -17,7 +15,9 @@ struct stack_t {
 
 /******************** static functions declarations ********************/ 
 
-static void stack_resize(Stack, size_t);
+/* For a given stack, changes the size of its intern data array for one of the length 
+given. No element is deleted from the stack. Returns false if issue, true if not. */
+static bool stack_resize(Stack stack, size_t new_size);
 
 /******************** Stack operations definitions ********************/ 
 
@@ -46,36 +46,40 @@ void stack_destroy(Stack stack) {
     free(stack);
 }
 
-void stack_push(Stack stack, void* elem) {
+bool stack_push(Stack stack, void* elem) {
     if (stack->quantity == stack->capacity) {
-        stack_resize(stack, stack->capacity * VARIATION_SIZE);
+        bool ok = stack_resize(stack, stack->capacity * VARIATION_SIZE);
+        if (!ok) return false;
     }
 
     void *new_elem = (void*)malloc(sizeof(void*));
-    assert_msg(new_elem != NULL, MEM_ELEM_ERR);
+    if (new_elem == NULL) return false;
 
     memcpy(new_elem, elem, sizeof(void*));
     stack->data[stack->quantity++] = new_elem;
+
+    return true;
 }
 
 void* stack_pop(Stack stack) {
-    assert_msg(!stack_is_empty(stack), EMPTY_STACK_ERR);
+    if (stack_is_empty(stack)) return NULL;
 
     void *deleted = malloc(sizeof(void*));
-    assert_msg(deleted != NULL, MEM_ELEM_ERR);
+    if (deleted == NULL) return NULL;
 
     memcpy(deleted, stack->data[stack->quantity-1], sizeof(void*));
     free(stack->data[--stack->quantity]);
 
     if(stack->quantity * 2 * VARIATION_SIZE == stack->capacity) {
-        stack_resize(stack, stack->capacity / VARIATION_SIZE);
+        bool ok = stack_resize(stack, stack->capacity / VARIATION_SIZE);
+        if (!ok) return NULL;
     }
 
     return deleted;
 }
 
 void* stack_top(const Stack stack) {
-    assert_msg(!stack_is_empty(stack), EMPTY_STACK_ERR);
+    if (stack_is_empty(stack)) return NULL;
 
     return stack->data[stack->quantity-1];
 }
@@ -86,10 +90,12 @@ bool stack_is_empty(const Stack stack) {
 
 /******************** static functions definitions ********************/
 
-static void stack_resize(Stack stack, size_t new_size) {
+static bool stack_resize(Stack stack, size_t new_size) {
     void** temp_data = realloc(stack->data, new_size * sizeof(void*));
-    assert_msg(temp_data != NULL, MEM_ELEM_ERR);
+    if (temp_data == NULL) return false;
 
     stack->data = temp_data;
     stack->capacity = new_size;
+
+    return true;
 }
