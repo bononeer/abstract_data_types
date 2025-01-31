@@ -15,9 +15,7 @@ The following are the ADTs implemented:
 
 Each ADT has the documentation for their operations in the README file inside their own directory. You can also read it in the `.h` file.
 
-Every ADT is for generic types, which means you could use it with most C datatypes. It's important to be careful with the elements added and obtained from the ADTs and how you cast them.
-
-The types of the elements added should be the same as the ones obtained if you don't want to lose information.
+Every ADT is for generic types, which means you could use it with most C datatypes. If you don't want to lose information, the types of the elements obtained should be casted as the same type as the ones added.
 
 An example with ADT Stack:
 
@@ -32,13 +30,13 @@ top = stack_pop(s);
 int obtained = *(int*)top;
 ```
 
-The file `assert_msg.h` is used for the testing. However, it must always be in the parent directory of any `.c` implementation file because they use them for error handling.
-
 With the given `.h` file in an ADT directory, you can implement your own version that respects the signatures for its operations.
 
 ## Testing
 
 Each ADT directory has it own `*_test.c` file that tests their operations, these tests don't depend on the implementation in the `.c` file.
+
+The file `assert_msg.h` is used for the testing. For the correct working of the tests, it must always be in the parent directory of any ADT directory.
 
 ## Compiling
 
