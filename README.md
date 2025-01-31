@@ -5,7 +5,7 @@ Interface, implementations and testing for some ADTs in C language.
 The following are the ADTs implemented:
 
 * [Stack](stack)
-* Queue
+* [Queue](queue)
 * List
 * Map
 * SortedMap
