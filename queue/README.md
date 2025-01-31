@@ -39,7 +39,8 @@ POST:
 void* queue_front(const Queue queue);
 
 /* Returns true if the queue is empty; otherwise, it returns false. */
-bool queue_is_empty(const Queue queue);```
+bool queue_is_empty(const Queue queue);
+```
 
 ## Compiling
 
