@@ -6,7 +6,7 @@ The following are the ADTs implemented:
 
 * [Stack](stack)
 * [Queue](queue)
-* List
+* [List](list)
 * Map
 * SortedMap
 * PriorityQueue

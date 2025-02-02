@@ -1,0 +1,341 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include "list.h"
+#include "../assert_msg.h"
+
+#define AMOUNT 50
+#define BULK_AMOUNT 10000
+
+static void print_test(bool, const char*);
+static bool sum_all(void *elem, void *extra);
+static bool cut_condition(void* elem, void* extra);
+static bool copy_list(void* elem, void* extra);
+
+void test_new_list(void) {
+    printf("TEST: A newly created list works as expected\n");
+
+    List l = list_create();
+
+    print_test(l != NULL, "Create a new list");
+    print_test(list_is_empty(l), "The list must be empty");
+    print_test(list_length(l) == 0, "The length of an empty list must be equal to 0");
+    print_test(list_delete_first(l) == NULL, "Trying to delete the first element of an empty list returns NULL");
+    print_test(list_get_first(l) == NULL, "Trying to get the first element of an empty list returns NULL");
+    print_test(list_get_last(l) == NULL, "Trying to get the last element of an empty list returns NULL");
+
+    list_destroy(l);
+}
+
+void test_list_one_element(void) {
+    printf("TEST: Insert an element, get its value, delete it\n");
+
+    List l = list_create();
+    void* ptr = NULL;
+    int elem = 2;
+
+    print_test(list_insert_first(l, &elem), "The element is inserted in the first position");
+    print_test(!list_is_empty(l), "After inserting an element the list must not be empty");
+    print_test(list_length(l) == 1, "The length of the list goes up by one after inserting an element");
+
+    ptr = list_get_first(l);
+    print_test(*(int*)ptr == elem, "The element in the first position of the list is the one inserted");
+    print_test(!list_is_empty(l), "Getting the element at the first position does not delete it or make the list empty");
+    print_test(list_length(l) == 1, "Getting the element at the first position does not change the length of the list");
+
+    ptr = list_get_last(l);
+    print_test(*(int*)ptr == elem, "The element in the last position of the list is the one inserted in the first position");
+    print_test(!list_is_empty(l), "Getting the element at the last position does not delete it or make the list empty");
+    print_test(list_length(l) == 1, "Getting the element at the last position does not change the length of the list");
+
+    ptr = list_delete_first(l);
+    print_test(*(int*)ptr == elem, "The element deleted from the list is the one inserted");
+    print_test(list_is_empty(l), "After deleting the element the list must become empty");
+    print_test(list_length(l) == 0, "The length of the list must become 0 after deleting its only element");
+
+    free(ptr);
+    list_destroy(l);
+}
+
+void test_insert_first_is_equal_to_insert_last_for_an_empty_list(void) {
+    printf("TEST: After inserting an element to an empty list, verify that the first and last element are the same element\n");
+
+    List l = list_create();
+    void *first = NULL, *last = NULL;
+    float elem = 3.14f;
+
+    list_insert_last(l, &elem);
+    first = list_get_first(l);
+    last = list_get_last(l);
+
+    print_test(first == last, "The element inserted in the empty list is the first element and the last element at the same time");
+    print_test(list_length(l) == 1, "There must be only one element in the list");
+
+    list_destroy(l);
+}
+
+void test_delete_one_element_multiple_appearances(void) {
+    printf("TEST: Insert an element multiple times, delete the first element from the list, check that only one appearance of it has been deleted\n");
+
+    List l = list_create();
+    void* ptr = NULL;
+    char elem = 'a';
+
+    for (int i = 0 ; i < AMOUNT ; i++) {
+        list_insert_last(l, &elem);
+    }
+    print_test(list_length(l) == AMOUNT, "The list has a good amount of elements inserted");
+
+    ptr = list_delete_first(l);
+    print_test(*(char*)ptr == 'a', "The element deleted is the same as the one inserted multiple times");
+    print_test(list_length(l) == AMOUNT - 1, "Even tough one of the elements was deleted, all the other appearances of it are not deleted");
+    print_test(!list_is_empty(l), "The list must not be empty after one of the elements was deleted");
+
+    free(ptr);
+    list_destroy(l);
+}
+
+void test_insert_at_the_end(void) {
+    printf("TEST: Inserting elements at the end of the list do not affect its first element\n");
+
+    List l = list_create();
+    void *first = NULL, *last = NULL;
+    int elem_first = 1, elem = 99;
+
+    list_insert_first(l, &elem_first);
+    first = list_get_first(l);
+    print_test(*(int*)first == elem_first, "The element was inserted correctly at the first position");
+
+    for (int i = 0 ; i < AMOUNT ; i++) {
+        list_insert_last(l, &elem);
+        first = list_get_first(l);
+        last = list_get_last(l);
+        print_test(*(int*)first != *(int*)last, "Inserting elements in the last position do not affect the element at the first position");
+    }
+
+    list_destroy(l);
+}
+
+void test_insert_at_the_start(void) {
+    printf("TEST: Inserting elements at the start of the list do not affect its last element\n");
+
+    List l = list_create();
+    void *first = NULL, *last = NULL;
+    int elem_last = 1, elem = 99;
+
+    list_insert_last(l, &elem_last);
+    last = list_get_last(l);
+    print_test(*(int*)last == elem_last, "The element was inserted correctly at the last position");
+
+    for (int i = 0 ; i < AMOUNT ; i++) {
+        list_insert_first(l, &elem);
+        first = list_get_first(l);
+        last = list_get_last(l);
+        print_test(*(int*)first != *(int*)last, "Inserting elements in the first position do not affect the element at the last position");
+    }
+
+    list_destroy(l);
+}
+
+void test_emptied_list(void) {
+    printf("TEST: Verifies that an empty list acts like a newly created list\n");
+
+    List l = list_create();
+    void *first = NULL, *last = NULL;
+    bool ok = true;
+
+    for (int i = 0 ; i < AMOUNT && ok; i++) {
+        list_insert_last(l, &i);
+        last = list_get_last(l);
+        ok = *(int*)last == i && !list_is_empty(l);
+    }
+    print_test(ok, "A good amount of element can be inserted in the list");
+
+    for (int i = 0 ; i < AMOUNT && ok ; i++) {
+        first = list_delete_first(l);
+        ok = *(int*)first == i;
+        free(first);
+    }
+
+    print_test(list_is_empty(l), "An emptied list must be empty");
+    print_test(list_length(l) == 0, "The length of an empty list must be equal to 0");
+    print_test(list_delete_first(l) == NULL, "Trying to delete the first element of an empty list returns NULL");
+    print_test(list_get_first(l) == NULL, "Trying to get the first element of an empty list returns NULL");
+    print_test(list_get_last(l) == NULL, "Trying to get the last element of an empty list returns NULL");
+
+    list_destroy(l);
+}
+
+void test_sum_all_with_internal_iterator(void) {
+    printf("TEST: Get the sum of all the elements in the list with a for each iteration\n");
+
+    List l = list_create();
+    size_t length = 5;
+    int elements[5] = {1, 2, 3, 4, 5};
+    int sum = 0, sum_for_each = 0;
+
+    for (size_t i = 0 ; i < length ; i++) {
+        list_insert_first(l, &elements[i]);
+        sum += elements[i];
+    }
+    list_for_each(l, sum_all, &sum_for_each);
+
+    print_test(sum == sum_for_each, "The for each iteration sums all the elements in the list correctly");
+
+    list_destroy(l);
+}
+
+void test_cut_condition_with_internal_iterator(void) {
+    printf("TEST: Test a for each iteration with a cut condition\n");
+
+    List l = list_create();
+    size_t length = 14;
+    int elements[14] = {2, 1, 8, 7, 5, 0, 3, 8, 2, 1, 10, 23, 12, 59};
+    int iterations = 0;
+
+    for (size_t i = 0 ; i < length ; i++) {
+        list_insert_last(l, &elements[i]);
+    }
+    print_test(list_length(l) == length, "Every element has been inserted correctly");
+
+    list_for_each(l, cut_condition, &iterations);
+    print_test(iterations != length, "The iteration must have stopped before reaching the last element in the list");
+
+    list_destroy(l);
+}
+
+void test_bulk_internal_iterator(void) {
+    printf("TEST: Iterate through a list with a huge amount elements with a for each iteration with no cut condition\n");
+
+    List l1 = list_create();
+    List l2 = list_create();
+    void *ptr1 = NULL, *ptr2 = NULL;
+    bool ok = true;
+
+    for (int i = 0 ; i < BULK_AMOUNT && ok; i++) {
+        list_insert_last(l1, &i);
+        ptr1 = list_get_last(l1);
+        ok = *(int*)ptr1 == i;
+    }
+    print_test(ok, "A huge amount of elements can be inserted in a list");
+
+    list_for_each(l1, copy_list, &l2);
+    
+    print_test(list_length(l1) == list_length(l2), "The for each iteration must have gone through every element of the list");
+    for (int i = 0 ; i < BULK_AMOUNT ; i++) {
+        ptr1 = list_delete_first(l1);
+        ptr2 = list_delete_first(l2);
+        print_test(*(int*)ptr1 == *(int*)ptr2, "The given visit function works as expected");
+
+        free(ptr1);
+        free(ptr2);
+    }
+
+    list_destroy(l1);
+    list_destroy(l2);
+}
+
+void test_iterator_for_empty_list(void) {
+    printf("TEST: An iterator created for an empty list must act as a finished iterator\n");
+
+    List l = list_create();
+    ListIterator iter = list_iter_create(l);
+
+    print_test(iter != NULL, "Create a new List Iterator");
+    print_test(!list_iter_has_next(iter), "A iterator for an empty list must not have elements to iterate through");
+    print_test(!list_iter_next(iter), "The iterator can not advance to the next element as there are none to iterate through inside the list");
+    print_test(list_iter_get_current(iter) == NULL, "Trying to get the current element of an iteration with no elements to iterate through returns NULL");
+    print_test(list_iter_delete(iter) == NULL, "Trying to delete the current element of an iteration with no elements to iterate through returns NULL");
+
+    list_iter_destroy(iter);
+    list_destroy(l);
+}
+
+void test_iterate_trough_a_list(void) {
+    printf("TEST: Iterate through a non-empty list and verify the order is kept correctly\n");
+
+    List l = list_create();
+    void* current = NULL;
+
+    for (int i = 0 ; i < AMOUNT ; i++) list_insert_last(l, &i);
+
+    ListIterator iter = list_iter_create(l);
+    for (int i = 0 ; i < AMOUNT ; i++) {
+        print_test(list_iter_has_next(iter), "There must still be elements left to iterate through");
+        current = list_iter_get_current(iter);
+        print_test(*(int*)current == i, "The current element at the iteration is the expected one");
+        list_iter_next(iter);
+    }
+
+    list_iter_destroy(iter);
+    list_destroy(l);
+}
+
+void test_iteration_insert_first_position(void) {
+    printf("TEST: Insert an element in the position where the iterator is created is equivalent to use the insert first operation of the list\n");
+
+    List l1 = list_create();    
+    List l2 = list_create();
+    void *ptr = NULL, *current = NULL;    
+    float elem = 18.41f;
+
+    print_test(list_insert_first(l1, &elem), "The element is inserted in the first position");
+    print_test(!list_is_empty(l1), "After inserting an element the list must not be empty");
+    print_test(list_length(l1) == 1, "The length of the list goes up by one after inserting an element");
+
+    ptr = list_get_first(l1);
+    print_test(*(float*)ptr == elem, "The element in the first position of the list is the one inserted");
+
+    ListIterator iter = list_iter_create(l2);
+    print_test(list_iter_insert(iter, &elem), "The element is inserted where the iterator is created");
+    print_test(!list_is_empty(l2), "After inserting an element with the iterator the list must not be empty");
+    print_test(list_length(l1) == 1, "The length of the list goes up by one after inserting an element with the iterator");
+
+    current = list_iter_get_current(iter);
+    ptr = list_get_first(l2);
+    print_test(*(float*)ptr == *(float*)current, "The element in the first position of the list is the one inserted with the iterator");
+
+    list_iter_destroy(iter);
+    list_destroy(l1);
+    list_destroy(l2);
+}
+
+int main(void) {
+    test_new_list();
+    test_list_one_element();
+    test_insert_first_is_equal_to_insert_last_for_an_empty_list();
+    test_delete_one_element_multiple_appearances();
+    test_insert_at_the_end();
+    test_insert_at_the_start();
+    test_emptied_list();
+    test_sum_all_with_internal_iterator();
+    test_cut_condition_with_internal_iterator();
+    test_bulk_internal_iterator();
+
+    test_iterator_for_empty_list();
+    test_iterate_trough_a_list();
+    test_iteration_insert_first_position();
+
+    return 0;
+}
+
+void print_test(bool success, const char* msg) {
+    char result[10 + (int)strlen(msg)];
+    sprintf(result, "FAIL: %s\n", msg);
+    assert_msg(success, result);
+}
+
+bool sum_all(void* elem, void* extra) {
+    *(int*)extra += *(int*)elem;
+    return true;
+}
+
+bool cut_condition(void* elem, void* extra) {
+    *(int*)extra += 1;
+    return *(int*)elem % 3 != 0;
+}
+
+bool copy_list(void* elem, void* extra) {
+    list_insert_last(*(List*)extra, (int*)elem);
+    return true;
+}
