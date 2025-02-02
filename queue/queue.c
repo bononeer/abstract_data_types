@@ -1,5 +1,4 @@
 #include <stdlib.h>
-#include <stdio.h>
 #include <string.h>
 #include "queue.h"
 
@@ -21,6 +20,8 @@ struct queue_t {
 
 // Return a node with the given value and a null next node.
 static node_t* node_create(void* value);
+// Frees the memory of a given node.
+static void node_destroy(node_t* node);
 
 /******************** Queue operations definitions ********************/ 
 
@@ -35,11 +36,11 @@ Queue queue_create(void) {
 }
 
 void queue_destroy(Queue queue) {
-    node_t *actual = queue->first;
+    node_t *current = queue->first;
     while (queue->first != NULL) {
-        actual = queue->first;
+        current = queue->first;
         queue->first = queue->first->next;
-        free(actual);
+        node_destroy(current);
     }
     free(queue);
 }
@@ -57,16 +58,13 @@ bool queue_enqueue(Queue queue, void* elem) {
 
 void* queue_dequeue(Queue queue) {
     if (queue_is_empty(queue)) return NULL;
-
-    void* deleted = malloc(sizeof(void*));
-    if (deleted == NULL) return NULL;
-
-    memcpy(deleted, queue->first->value, sizeof(void*));
     
     node_t* first = queue->first;
-    queue->first = queue->first->next;
+    void* deleted = first->value;
+
+    queue->first = first->next;
     if (first == queue->last) queue->last = NULL;
-    free(first->value);
+
     free(first);
 
     return deleted;
@@ -97,4 +95,9 @@ static node_t* node_create(void* value) {
     memcpy(node->value, value, sizeof(void*));
 
     return node;
+}
+
+static void node_destroy(node_t* node) {
+    free(node->value);
+    free(node);
 }
