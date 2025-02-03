@@ -147,6 +147,8 @@ bool list_iter_next(ListIterator iter) {
     if (!list_iter_has_next(iter)) return false;
 
     iter->current = iter->current->next;
+    if (iter->past == NULL) iter->past = iter->list->first;
+    else iter->past = iter->past->next;
 
     return true;
 }
@@ -162,10 +164,10 @@ bool list_iter_insert(ListIterator iter, void* elem) {
     if (new_node == NULL) return false;
 
     new_node->next = iter->current;
-    if (iter->past == NULL) iter->list->first = new_node;
     if (iter->current == NULL) iter->list->last = new_node;
+    if (iter->past == NULL) iter->list->first = new_node;
     else iter->past->next = new_node;
-
+    
     iter->current = new_node;
     iter->list->length++;
 
