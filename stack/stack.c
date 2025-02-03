@@ -52,7 +52,7 @@ bool stack_push(Stack stack, void* elem) {
         if (!ok) return false;
     }
 
-    void *new_elem = (void*)malloc(sizeof(void*));
+    void *new_elem = malloc(sizeof(void*));
     if (new_elem == NULL) return false;
 
     memcpy(new_elem, elem, sizeof(void*));
@@ -64,11 +64,7 @@ bool stack_push(Stack stack, void* elem) {
 void* stack_pop(Stack stack) {
     if (stack_is_empty(stack)) return NULL;
 
-    void *deleted = malloc(sizeof(void*));
-    if (deleted == NULL) return NULL;
-
-    memcpy(deleted, stack->data[stack->quantity-1], sizeof(void*));
-    free(stack->data[--stack->quantity]);
+    void* deleted = stack->data[--stack->quantity];
 
     if(stack->quantity * 2 * VARIATION_SIZE == stack->capacity) {
         bool ok = stack_resize(stack, stack->capacity / VARIATION_SIZE);

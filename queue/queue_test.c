@@ -110,7 +110,6 @@ static void test_change_enqueued_value(void) {
     front = queue_front(q);
     print_test(*(char*)front != elem, "The value of the element at the front must not have changed after changing the value of the element enqueued");
 
-    free(front);
     queue_destroy(q);
 }
 
