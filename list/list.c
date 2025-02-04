@@ -28,7 +28,7 @@ struct list_iter_t {
 // Return a node with the given value and a null next node.
 static node_t* node_create(void* value);
 // Frees the memory of a given node.
-static void node_destroy(node_t* node);
+static void node_destroy(node_t* node, void elem_destroy(void* elem));
 
 /******************** List operations definitions ********************/
 
@@ -43,12 +43,13 @@ List list_create(void) {
     return list;
 }
 
-void list_destroy(List list) {
+void list_destroy(List list, void (*elem_destroy)(void* elem)) {
     node_t *current = list->first;
+    if (elem_destroy == NULL) elem_destroy = free;
     while (list->first != NULL) {
         current = list->first;
         list->first = list->first->next;
-        node_destroy(current);
+        node_destroy(current, elem_destroy);
     }
     free(list);
 }
@@ -208,7 +209,7 @@ static node_t* node_create(void* value) {
     return node;
 }
 
-static void node_destroy(node_t* node) {
-    free(node->value);
+static void node_destroy(node_t* node, void elem_destroy(void* elem)) {
+    elem_destroy(node->value);
     free(node);
 }

@@ -17,8 +17,12 @@ POST:
 - if there is not enough memory for the list, the function will return NULL. */
 List list_create(void);
 
-/* Frees the memory where the list is allocated */
-void list_destroy(List list);
+/* Frees the memory where the list is allocated 
+
+PRE:
+- elem_destroy is a pointer to a function that destroys the elements stored in the list.
+If NULL is given, it will destroy the elements with the `free` function from stdlib. */
+void list_destroy(List list, void (*elem_destroy)(void* elem));
 
 /* Returns true if the list is empty; otherwise, it returns false. */
 bool list_is_empty(const List list);

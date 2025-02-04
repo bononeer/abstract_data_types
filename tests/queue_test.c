@@ -1,8 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "queue.h"
-#include "../assert_msg.h"
+#include "../queue/queue.h"
+#include "assert_msg.h"
 
 #define AMOUNT 50
 #define BULK_AMOUNT 10000
@@ -20,7 +20,7 @@ static void test_new_queue(void) {
     print_test(queue_dequeue(q) == NULL, "An empty queue returns NULL if its tries to dequeue");
     print_test(queue_front(q) == NULL, "An empty queue returns NULL if its tries to peek at the front");
 
-    queue_destroy(q);
+    queue_destroy(q, NULL);
 }
 
 static void test_queue_one_element(void) {
@@ -44,7 +44,7 @@ static void test_queue_one_element(void) {
     print_test(queue_dequeue(q) == NULL, "After dequeuing its only element, there are no more elements left to dequeue");
 
     free(front);
-    queue_destroy(q);
+    queue_destroy(q, NULL);
 }
 
 static void test_fifo(void) {
@@ -68,7 +68,7 @@ static void test_fifo(void) {
         free(front);
     }
 
-    queue_destroy(q);
+    queue_destroy(q, NULL);
 }
 
 void test_bulk_fifo(void) {
@@ -92,7 +92,7 @@ void test_bulk_fifo(void) {
     }
     print_test(queue_is_empty(q), "After dequeuing all the elements, the queue is empty");
 
-    queue_destroy(q);
+    queue_destroy(q, NULL);
 }
 
 static void test_change_enqueued_value(void) {
@@ -110,7 +110,7 @@ static void test_change_enqueued_value(void) {
     front = queue_front(q);
     print_test(*(char*)front != elem, "The value of the element at the front must not have changed after changing the value of the element enqueued");
 
-    queue_destroy(q);
+    queue_destroy(q, NULL);
 }
 
 void test_emptied_queue(void) {
@@ -139,7 +139,7 @@ void test_emptied_queue(void) {
     print_test(queue_dequeue(q) == NULL, "An empty queue returns NULL if its tries to dequeue");
     print_test(queue_front(q) == NULL, "An empty queue returns NULL if its tries to peek at the front");
 
-    queue_destroy(q);
+    queue_destroy(q, NULL);
 }
 
 int main(void) {

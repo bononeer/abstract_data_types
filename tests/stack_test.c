@@ -1,8 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "stack.h"
-#include "../assert_msg.h"
+#include "../stack/stack.h"
+#include "assert_msg.h"
 
 #define AMOUNT 50
 #define BULK_AMOUNT 10000
@@ -20,7 +20,7 @@ static void test_new_stack(void) {
     print_test(stack_pop(s) == NULL, "An empty stack returns NULL if its tries to pop");
     print_test(stack_top(s) == NULL, "An empty stack returns NULL if its tries to peek at the top");
 
-    stack_destroy(s);
+    stack_destroy(s, NULL);
 }
 
 static void test_stack_one_element(void) {
@@ -44,7 +44,7 @@ static void test_stack_one_element(void) {
     print_test(stack_pop(s) == NULL, "After popping its last element, there are no elements left in the stack");
 
     free(top);
-    stack_destroy(s);
+    stack_destroy(s, NULL);
 }
 
 static void test_lifo(void) {
@@ -68,7 +68,7 @@ static void test_lifo(void) {
         free(top);
     }
 
-    stack_destroy(s);
+    stack_destroy(s, NULL);
 }
 
 static void test_bulk_lifo(void) {
@@ -90,7 +90,7 @@ static void test_bulk_lifo(void) {
     }
     print_test(stack_is_empty(s), "After popping all the elements the stack must be empty");
 
-    stack_destroy(s);
+    stack_destroy(s, NULL);
 }
 
 static void test_change_pushed_value(void) {
@@ -108,7 +108,7 @@ static void test_change_pushed_value(void) {
     top = stack_top(s);
     print_test(*(char*)top != elem, "After changing the value of the element that was pushed into the stack, the top of the stack didn't change");
 
-    stack_destroy(s);
+    stack_destroy(s, NULL);
 }
 
 static void test_emptied_stack(void) {
@@ -136,7 +136,7 @@ static void test_emptied_stack(void) {
     print_test(stack_pop(s) == NULL, "An empty stack returns NULL if its tries to pop");
     print_test(stack_top(s) == NULL, "An empty stack returns NULL if its tries to peek at the top");
 
-    stack_destroy(s);
+    stack_destroy(s, NULL);
 }
 
 int main(void) {

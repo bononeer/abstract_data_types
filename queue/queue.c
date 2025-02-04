@@ -21,7 +21,7 @@ struct queue_t {
 // Return a node with the given value and a null next node.
 static node_t* node_create(void* value);
 // Frees the memory of a given node.
-static void node_destroy(node_t* node);
+static void node_destroy(node_t* node, void elem_destroy(void* elem));
 
 /******************** Queue operations definitions ********************/ 
 
@@ -35,12 +35,13 @@ Queue queue_create(void) {
     return queue;
 }
 
-void queue_destroy(Queue queue) {
+void queue_destroy(Queue queue, void (*elem_destroy)(void* elem)) {
     node_t *current = queue->first;
+    if (elem_destroy == NULL) elem_destroy = free;
     while (queue->first != NULL) {
         current = queue->first;
         queue->first = queue->first->next;
-        node_destroy(current);
+        node_destroy(current, elem_destroy);
     }
     free(queue);
 }
@@ -97,7 +98,7 @@ static node_t* node_create(void* value) {
     return node;
 }
 
-static void node_destroy(node_t* node) {
-    free(node->value);
+static void node_destroy(node_t* node, void elem_destroy(void* elem)) {
+    elem_destroy(node->value);
     free(node);
 }

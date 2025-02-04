@@ -34,16 +34,14 @@ With the given `.h` file in an ADT directory, you can implement your own version
 
 ## Testing
 
-Each ADT directory has it own `*_test.c` file that tests their operations, these tests don't depend on the implementation in the `.c` file.
+Each ADT has it own `*_test.c` file that tests their operations, these tests don't depend on the implementation in the `.c` file. You can find these in the [test](tests) directory.
 
-The file `assert_msg.h` is used for the testing. For the correct working of the tests, it must always be in the parent directory of any ADT directory.
+The file `assert_msg.h` defines a macro used for testing.
+
+To compile a test file for a generic `adt` just write in your command line:
+
+    make <adt>
 
 ## Compiling
-
-A makefile is provided in every ADT directory so you can compile your files with the following line:
-
-    make
-
-You may change some variables to compile the files like you want.
 
 ## License

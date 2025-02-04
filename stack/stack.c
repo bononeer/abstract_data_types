@@ -38,9 +38,10 @@ Stack stack_create(void) {
     return stack;
 }
 
-void stack_destroy(Stack stack) {
+void stack_destroy(Stack stack, void (*elem_destroy)(void* elem)) {
+    if (elem_destroy == NULL) elem_destroy = free;
     for (size_t i = 0; i < stack->quantity; i++) {
-        free(stack->data[i]);
+        elem_destroy(stack->data[i]);
     }
     free(stack->data);
     free(stack);

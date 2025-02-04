@@ -16,8 +16,12 @@ POST:
 - if there is not enough memory for the queue, the function will return NULL. */
 Queue queue_create(void);
 
-/* Frees the memory where the queue is allocated */
-void queue_destroy(Queue queue);
+/* Frees the memory where the queue is allocated 
+
+PRE:
+- elem_destroy is a pointer to a function that destroys the elements stored in the queue.
+If NULL is given, it will destroy the elements with the `free` function from stdlib. */
+void queue_destroy(Queue queue, void (*elem_destroy)(void* elem));
 
 /* Add `elem`'s value at the end of the queue. 
 

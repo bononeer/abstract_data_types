@@ -1,8 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "list.h"
-#include "../assert_msg.h"
+#include "../list/list.h"
+#include "assert_msg.h"
 
 #define AMOUNT 50
 #define BULK_AMOUNT 10000
@@ -24,7 +24,7 @@ void test_new_list(void) {
     print_test(list_get_first(l) == NULL, "Trying to get the first element of an empty list returns NULL");
     print_test(list_get_last(l) == NULL, "Trying to get the last element of an empty list returns NULL");
 
-    list_destroy(l);
+    list_destroy(l, free);
 }
 
 void test_list_one_element(void) {
@@ -54,7 +54,7 @@ void test_list_one_element(void) {
     print_test(list_length(l) == 0, "The length of the list must become 0 after deleting its only element");
 
     free(ptr);
-    list_destroy(l);
+    list_destroy(l, free);
 }
 
 void test_insert_first_is_equal_to_insert_last_for_an_empty_list(void) {
@@ -71,7 +71,7 @@ void test_insert_first_is_equal_to_insert_last_for_an_empty_list(void) {
     print_test(first == last, "The element inserted in the empty list is the first element and the last element at the same time");
     print_test(list_length(l) == 1, "There must be only one element in the list");
 
-    list_destroy(l);
+    list_destroy(l, free);
 }
 
 void test_delete_one_element_multiple_appearances(void) {
@@ -92,7 +92,7 @@ void test_delete_one_element_multiple_appearances(void) {
     print_test(!list_is_empty(l), "The list must not be empty after one of the elements was deleted");
 
     free(ptr);
-    list_destroy(l);
+    list_destroy(l, free);
 }
 
 void test_insert_at_the_end(void) {
@@ -113,7 +113,7 @@ void test_insert_at_the_end(void) {
         print_test(*(int*)first != *(int*)last, "Inserting elements in the last position do not affect the element at the first position");
     }
 
-    list_destroy(l);
+    list_destroy(l, free);
 }
 
 void test_insert_at_the_start(void) {
@@ -134,7 +134,7 @@ void test_insert_at_the_start(void) {
         print_test(*(int*)first != *(int*)last, "Inserting elements in the first position do not affect the element at the last position");
     }
 
-    list_destroy(l);
+    list_destroy(l, free);
 }
 
 void test_emptied_list(void) {
@@ -163,7 +163,7 @@ void test_emptied_list(void) {
     print_test(list_get_first(l) == NULL, "Trying to get the first element of an empty list returns NULL");
     print_test(list_get_last(l) == NULL, "Trying to get the last element of an empty list returns NULL");
 
-    list_destroy(l);
+    list_destroy(l, free);
 }
 
 void test_sum_all_with_internal_iterator(void) {
@@ -182,7 +182,7 @@ void test_sum_all_with_internal_iterator(void) {
 
     print_test(sum == sum_for_each, "The for each iteration sums all the elements in the list correctly");
 
-    list_destroy(l);
+    list_destroy(l, free);
 }
 
 void test_cut_condition_with_internal_iterator(void) {
@@ -201,7 +201,7 @@ void test_cut_condition_with_internal_iterator(void) {
     list_for_each(l, cut_condition, &iterations);
     print_test(iterations != length, "The iteration must have stopped before reaching the last element in the list");
 
-    list_destroy(l);
+    list_destroy(l, free);
 }
 
 void test_bulk_internal_iterator(void) {
@@ -231,8 +231,8 @@ void test_bulk_internal_iterator(void) {
         free(ptr2);
     }
 
-    list_destroy(l1);
-    list_destroy(l2);
+    list_destroy(l1, free);
+    list_destroy(l2, free);
 }
 
 void test_iterator_for_empty_list(void) {
@@ -248,7 +248,7 @@ void test_iterator_for_empty_list(void) {
     print_test(list_iter_delete(iter) == NULL, "Trying to delete the current element of an iteration with no elements to iterate through returns NULL");
 
     list_iter_destroy(iter);
-    list_destroy(l);
+    list_destroy(l, free);
 }
 
 void test_bulk_iterate_trough_a_list(void) {
@@ -268,7 +268,7 @@ void test_bulk_iterate_trough_a_list(void) {
     }
 
     list_iter_destroy(iter);
-    list_destroy(l);
+    list_destroy(l, free);
 }
 
 void test_iteration_insert_first_position(void) {
@@ -300,8 +300,8 @@ void test_iteration_insert_first_position(void) {
     print_test(*(int*)ptr == *(int*)current, "The element in the first position of the list is the one inserted with the iterator");
 
     list_iter_destroy(iter);
-    list_destroy(l1);
-    list_destroy(l2);
+    list_destroy(l1, free);
+    list_destroy(l2, free);
 }
 
 void test_iteration_insert_last_position(void) {
@@ -339,7 +339,7 @@ void test_iteration_insert_last_position(void) {
     print_test(list_length(l) == 2, "The list must only have the two elements inserted again");
 
     list_iter_destroy(iter);
-    list_destroy(l);
+    list_destroy(l, free);
 }
 
 void test_iteration_insert_middle(void) {
@@ -375,7 +375,7 @@ void test_iteration_insert_middle(void) {
     print_test(counter == position, "The element was inserted in the correct position");
 
     list_iter_destroy(iter);
-    list_destroy(l);
+    list_destroy(l, free);
 }
 
 void test_iteration_delete_first(void) {
@@ -399,7 +399,7 @@ void test_iteration_delete_first(void) {
 
     free(deleted);
     list_iter_destroy(iter);
-    list_destroy(l);
+    list_destroy(l, free);
 }
 
 int main(void) {

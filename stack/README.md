@@ -2,7 +2,7 @@
 
 A simple data structure that follows the LIFO principle - Last In, First Out.
 
-## Opreations
+## Operations
 
 ```c
 typedef struct stack_t* Stack;
@@ -13,8 +13,12 @@ POST:
 - if there is not enough memory for the stack, the function will return NULL. */
 Stack stack_create(void);
 
-/* Frees the memory where the stack is allocated */
-void stack_destroy(Stack stack);
+/* Frees the memory where the stack is allocated 
+
+PRE:
+- elem_destroy is a pointer to a function that destroys the elements stored in the stack.
+If NULL is given, it will destroy the elements with the `free` function from stdlib. */
+void stack_destroy(Stack stack, void (*elem_destroy)(void* elem));
 
 /* Add `elem`'s value into the top of the stack. 
 
@@ -43,9 +47,3 @@ void* stack_top(const Stack stack);
 /* Returns true if the stack is empty; otherwise, it returns false. */
 bool stack_is_empty(const Stack stack);
 ```
-
-## Compiling
-
-To compile your code run the following line, where `source_file` is the `.c` that needs `stack.h`.
-
-    gcc -o <output_file> <source_file> stack.c
