@@ -7,7 +7,7 @@ The following are the ADTs implemented:
 * [Stack](stack)
 * [Queue](queue)
 * [List](list)
-* Map
+* [Map](map)
 * SortedMap
 * PriorityQueue
 
@@ -40,7 +40,9 @@ The file `assert_msg.h` defines a macro used for testing.
 
 To compile a test file for a generic `adt` just write in your command line:
 
-    make <adt>
+```shell
+    make adt
+```
 
 ## Compiling
 
