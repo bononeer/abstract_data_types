@@ -1,10 +1,8 @@
 # ADT Map
 
-A data structure that stores key-value pairs. With a given key, you might get its value in constant time complexity. The keys are not sorted and are unique.
+A data structure that stores key-value pairs. With a given key, you can get its value in constant time complexity, as well as update it or remove it. The keys are **not** sorted and are unique.
 
 For the given interface, the keys for the ADT Map must always be strings (char*), but the values might be of any data type (void*).
-
-The ADT Map is implemented with open hashing. For that reason, `hash.c` needs the interface and implementation of the ADT List.
 
 ## Operations
 
@@ -13,9 +11,13 @@ typedef struct hash_t* Map;
 
 /* Returns an instance of an empty map. 
 
+PRE:
+- `value_destroy` function is the way the value of every `key-value` pair must
+be destroyed. If NULL is given, it wil use `stdlib` `free` function.
+
 POST:
 - if there is not enough memory for the map, the function will return NULL. */
-Map map_create();
+Map map_create(void (*value_destroy)(void* value));
 
 /* Frees the memory where the map is allocated */
 void map_destroy(Map map);

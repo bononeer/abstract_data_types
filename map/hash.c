@@ -1,9 +1,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
-#include <stdio.h>
 #include "map.h"
-#include "../list/list.h"
 
 #define INITIAL_CAPACITY 19
 #define VARIATION_CAPACITY 2
@@ -12,58 +10,62 @@
 
 /******************** structure definition ********************/ 
 
+typedef void (*value_destroy)(void*);
+
+typedef enum {
+    EMPTY = 0,
+    TAKEN,
+    DELETED
+} state_t;
+
 typedef struct pair {
     char* key;
     void* value;
+    state_t state;
 } pair_t;
 
 struct hash_t {
-    List* table;        // An array of pair_t lists 
+    pair_t** table;
     size_t size;
     size_t capacity;
+    size_t deleted;
+    value_destroy destroy; 
 };
 
 /******************** static functions declarations ********************/ 
 
-static List* hash_table_create(size_t capacity);
+static pair_t** hash_table_create(size_t capacity);
 static bool hash_table_resize(Map hash, size_t capacity);
-/* Destroys the hash table, only frees the lists of each position of
-the table up until the index given (not included). */
-static void hash_table_destroy(List* table, size_t index);
-/* If the key is stored in the map, it returns a list iterator with its current element 
-being the place where the pair is. If not, it returns a finished iterator. */
-static ListIterator hash_search(Map hash, const char* key);
-/* Returns the index of the place where a pair with the given key should be 
-ignoring collisions. */
-static size_t hash_get_index(Map hash, const char* key);
-/* Fowler-Noll-Vo, a non-cryptographic hash function created by Glenn Fowler, 
-Landon Curt Noll and Kiem-Phong Vo */  
+static void hash_table_destroy(pair_t** table, size_t capacity, void value_destroy(void* elem)) ;
+static size_t hash_search(Map hash, const char* key);
+static uint64_t hash_get_index(Map hash, const char* key);
 static uint64_t hash_fnv(const uint8_t* bytes);
-/* Cast elem to a pair_t* and if successful, frees its memory */
-static void pair_destroy(void* elem);
 
 /******************** Map operations definitions ********************/
 
-Map map_create() {
+Map map_create(void (*value_destroy)(void *value)) {
     Map hash = (Map)malloc(sizeof(struct hash_t));
     if (hash == NULL) return NULL;
 
+    hash->size = 0;
+    hash->capacity = INITIAL_CAPACITY;
+    hash->deleted = 0;
+    if (value_destroy == NULL) value_destroy = free;
+    hash->destroy = value_destroy;
 
-    List* table_temp = hash_table_create(INITIAL_CAPACITY);
+    pair_t** table_temp = hash_table_create(hash->capacity);
     if (table_temp == NULL) {
         free(hash);
         return NULL;
     }
 
-    hash->size = 0;
-    hash->capacity = INITIAL_CAPACITY;
     hash->table = table_temp;
 
     return hash;
 }
 
 void map_destroy(Map hash) {
-    hash_table_destroy(hash->table, hash->capacity);
+    hash_table_destroy(hash->table, hash->capacity, hash->destroy);
     free(hash);
 }
 
@@ -72,151 +74,148 @@ size_t map_size(Map hash) {
 }
 
 bool map_put(Map hash, char* key, void* value) {
-    float charge_factor = (float)hash->size / (float)hash->capacity;
+    float charge_factor = (float)(hash->size + hash->deleted) / (float)hash->capacity;
     if (charge_factor > MAX_CHARGE_FACTOR) {
         bool ok = hash_table_resize(hash, hash->capacity * VARIATION_CAPACITY);
         if (!ok) return false;
     }
 
-    ListIterator iter = hash_search(hash, key);
-    if (iter == NULL) return false;  // Not enough memory to create the iterator 
+    size_t index = hash_search(hash, key);
 
-    if (!list_iter_has_next(iter)) {
-        pair_t* pair = (pair_t*)malloc(sizeof(struct pair));
-        pair->key = key;
-        pair->value = value; 
-
-        list_iter_insert(iter, pair);
+    if (hash->table[index]->state == EMPTY) {
         hash->size++;
-    } else {
-        pair_t* current_pair = (pair_t*)list_iter_get_current(iter);
-        current_pair->value = value;
+        hash->table[index]->key = key;
+        hash->table[index]->state = TAKEN;
     }
-
-    list_iter_destroy(iter);
+    memcpy(hash->table[index]->value, value, sizeof(void*));
 
     return true;
 }
 
 bool map_contains(Map hash, const char* key) {
-    ListIterator iter = hash_search(hash, key);
-    if (iter == NULL) return false;  // Not enough memory to create the iterator 
+    size_t index = hash_search(hash, key);
 
-    bool contains = list_iter_has_next(iter); 
-
-    list_iter_destroy(iter);
-
-    return contains;
+    return hash->table[index]->state == TAKEN;
 }
 
 void* map_get(Map hash, const char* key) {
-    ListIterator iter = hash_search(hash, key);
-    if (iter == NULL) return false;  // Not enough memory to create the iterator
-    else if (!list_iter_has_next(iter)) {
-        list_iter_destroy(iter);
-        return NULL;
-    }
+    size_t index = hash_search(hash, key);
+    if (hash->table[index]->state != TAKEN) return NULL;
 
-    pair_t* current_pair = (pair_t*)list_iter_get_current(iter);
-    
-    list_iter_destroy(iter);
-
-    return current_pair->value;
+    return hash->table[index]->value;
 }
 
 void* map_remove(Map hash, char* key) {
-    return NULL;
+    size_t index = hash_search(hash, key);
+    if (hash->table[index]->state != TAKEN) return NULL;
+
+    void* deleted = hash->table[index]->value;
+    hash->size--;
+    hash->deleted++;
+    hash->table[index]->state = DELETED;
+
+    float charge_factor = (float)hash->size / (float)hash->capacity;
+    if (charge_factor < MIN_CHARGE_FACTOR && hash->capacity >= INITIAL_CAPACITY * VARIATION_CAPACITY) {
+        bool ok = hash_table_resize(hash, hash->capacity * VARIATION_CAPACITY);
+        if (!ok) return NULL;
+    }
+
+    return deleted;
 }
 
 void map_for_each(Map hash, bool visit(const char* key, void* value, void* extra), void* extra) {
-    bool ok = true;
-
-    for (size_t i = 0 ; i < hash->capacity && ok; i++) {
-        ListIterator iter = list_iter_create(hash->table[i]);
-        if (iter == NULL) break;
-
-        while (list_iter_has_next(iter)) {
-            pair_t* current_pair = (pair_t*)list_iter_get_current(iter);
-            if (!visit(current_pair->key, current_pair->value, extra)) {
-                ok = false;
-                break;
-            }
-            list_iter_next(iter);
-        }
-
-        list_iter_destroy(iter);
+    for (size_t i = 0 ; i < hash->capacity ; i++) {
+        pair_t* pair = hash->table[i];
+        if (pair->state == TAKEN && !visit(pair->key, pair->value, extra)) break;
     }
 }
 
 /******************** static functions definitions ********************/
 
-static List* hash_table_create(size_t capacity) {
-    List* table = (List*)malloc(capacity * sizeof(List));
+static pair_t** hash_table_create(size_t capacity) {
+    bool memory_error = false;
+    pair_t** table = (pair_t**)malloc(capacity * sizeof(pair_t*));
     if (table == NULL) return NULL;
-
-    for (size_t i = 0 ; i < capacity ; i++) {
-        table[i] = list_create();
-        if (table[i] == NULL) {
-            hash_table_destroy(table, i);
-            return NULL;
-        }
-    }
     
-    return table;
+    size_t i = 0;
+    for ( ; i < capacity && !memory_error ; i++) {
+        table[i] = (pair_t*)malloc(sizeof(pair_t));
+        if (table[i] == NULL) {
+            memory_error = true;
+            break;
+        }
+
+        table[i]->value = malloc(sizeof(void*));
+        if (table[i]->value == NULL) {
+            memory_error = true;
+            break;
+        }
+
+        table[i]->state = EMPTY;
+    }
+
+    if (!memory_error) return table;
+
+    for (size_t j = 0 ; j < i ; j++) {
+        free(table[j]->value);
+        free(table[j]);
+    }
+    free(table);
+
+    return NULL;
 }
 
 static bool hash_table_resize(Map hash, size_t new_capacity) {
-    List* old_table = hash->table;
     size_t old_capacity = hash->capacity;
+    pair_t** old_table = hash->table;
 
-    List* table_temp = hash_table_create(new_capacity);
-    if (table_temp == NULL) return false;
+    hash->capacity = new_capacity;
+    hash->table = hash_table_create(hash->capacity);
+    if (hash->table == NULL) return false;
 
     hash->size = 0;
-    hash->capacity = new_capacity;
-    hash->table = table_temp;
+    hash->deleted = 0;
 
     for (size_t i = 0 ; i < old_capacity ; i++) {
-        ListIterator iter = list_iter_create(old_table[i]);
-        while (list_iter_has_next(iter)) {
-            pair_t* current_pair = (pair_t*)list_iter_get_current(iter);
-            map_put(hash, current_pair->key, current_pair->value);
-            list_iter_next(iter);
+        if (old_table[i]->state == TAKEN) {
+            bool ok = map_put(hash, old_table[i]->key, old_table[i]->value);
+            if (!ok) return false;
+        }
+        else {
+            hash->destroy(old_table[i]->value);
+            free(old_table[i]);
         }
     }
-    hash_table_destroy(old_table, old_capacity);
 
     return true;
 }
 
-static void hash_table_destroy(List* table, size_t index) {
-    for (size_t i = 0 ; i < index ; i++) {
-        list_destroy(table[i], pair_destroy);
+static void hash_table_destroy(pair_t** table, size_t capacity, void value_destroy(void* elem)) {
+    for (size_t i = 0 ; i < capacity ; i++) {
+        value_destroy(table[i]->value);
+        free(table[i]);
     }
     free(table);
 }
 
-static ListIterator hash_search(Map hash, const char* key) {
+static size_t hash_search(Map hash, const char* key) {
     size_t index = hash_get_index(hash, key);
+    pair_t* current;
 
-    ListIterator iter = list_iter_create(hash->table[index]);
-    if (iter == NULL) return NULL;
+    do {
+        current = hash->table[index];
+        if (current->state == TAKEN && strcmp(current->key, key) == 0) return index;
+        index = (index+1) % hash->capacity;
+    } while (current->state != EMPTY);
 
-    while(list_iter_has_next(iter)) {
-        pair_t* current_pair = (pair_t*)list_iter_get_current(iter);
-        if (strcmp(current_pair->key, key) == 0) break;
-
-        list_iter_next(iter);
-    }
-
-    return iter;
+    return index;
 }
 
-static size_t hash_get_index(Map hash, const char* key) {
+static uint64_t hash_get_index(Map hash, const char* key) {
     const uint8_t* key_bytes = (const uint8_t*)key;
     uint64_t index = hash_fnv(key_bytes);
 
-    return (size_t)index % hash->capacity;
+    return index % hash->capacity;
 }
 
 static uint64_t hash_fnv(const uint8_t* bytes) {
@@ -228,13 +227,4 @@ static uint64_t hash_fnv(const uint8_t* bytes) {
     }
 
     return h;
-}
-
-static void pair_destroy(void* elem) {
-    pair_t* pair = (pair_t*)elem;
-    if (pair != NULL) {
-        free(pair->key);
-        free(pair->value);
-        free(pair);    
-    }
 }

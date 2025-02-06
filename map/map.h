@@ -17,9 +17,13 @@ typedef struct hash_t* Map;
 
 /* Returns an instance of an empty map. 
 
+PRE:
+- `value_destroy` function is the way the value of every `key-value` pair must
+be destroyed. If NULL is given, it wil use `stdlib` `free` function.
+
 POST:
 - if there is not enough memory for the map, the function will return NULL. */
-Map map_create();
+Map map_create(void (*value_destroy)(void* value));
 
 /* Frees the memory where the map is allocated */
 void map_destroy(Map map);
