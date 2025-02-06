@@ -1,12 +1,13 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
+#include <stdio.h>
 #include "map.h"
 
 #define INITIAL_CAPACITY 19
 #define VARIATION_CAPACITY 2
-#define MIN_CHARGE_FACTOR 0.5
-#define MAX_CHARGE_FACTOR 2.5
+#define MIN_CHARGE_FACTOR 0.15
+#define MAX_CHARGE_FACTOR 0.65
 
 /******************** structure definition ********************/ 
 
@@ -29,7 +30,7 @@ struct hash_t {
     size_t size;
     size_t capacity;
     size_t deleted;
-    value_destroy destroy; 
+    value_destroy destroy;
 };
 
 /******************** static functions declarations ********************/ 
@@ -83,8 +84,15 @@ bool map_put(Map hash, char* key, void* value) {
     size_t index = hash_search(hash, key);
 
     if (hash->table[index]->state == EMPTY) {
+        hash->table[index]->key = (char*)malloc((strlen(key)+1) * sizeof(char));
+        if (hash->table[index]->key == NULL) return false;
+        strcpy(hash->table[index]->key, key);
+        hash->table[index]->value = malloc(sizeof(void*));
+        if (hash->table[index]->value == NULL) {
+            free(hash->table[index]->key);
+            return false;
+        }
         hash->size++;
-        hash->table[index]->key = key;
         hash->table[index]->state = TAKEN;
     }
     memcpy(hash->table[index]->value, value, sizeof(void*));
@@ -109,14 +117,16 @@ void* map_remove(Map hash, char* key) {
     size_t index = hash_search(hash, key);
     if (hash->table[index]->state != TAKEN) return NULL;
 
-    void* deleted = hash->table[index]->value;
+    void* deleted = malloc(sizeof(void*));
+    if (deleted == NULL) return NULL;
+    memcpy(deleted, hash->table[index]->value, sizeof(void*));
     hash->size--;
     hash->deleted++;
     hash->table[index]->state = DELETED;
 
     float charge_factor = (float)hash->size / (float)hash->capacity;
     if (charge_factor < MIN_CHARGE_FACTOR && hash->capacity >= INITIAL_CAPACITY * VARIATION_CAPACITY) {
-        bool ok = hash_table_resize(hash, hash->capacity * VARIATION_CAPACITY);
+        bool ok = hash_table_resize(hash, hash->capacity / VARIATION_CAPACITY);
         if (!ok) return NULL;
     }
 
@@ -145,54 +155,48 @@ static pair_t** hash_table_create(size_t capacity) {
             break;
         }
 
-        table[i]->value = malloc(sizeof(void*));
-        if (table[i]->value == NULL) {
-            memory_error = true;
-            break;
-        }
-
         table[i]->state = EMPTY;
     }
 
     if (!memory_error) return table;
 
-    for (size_t j = 0 ; j < i ; j++) {
-        free(table[j]->value);
-        free(table[j]);
-    }
+    for (size_t j = 0 ; j < i ; j++) free(table[j]);
     free(table);
 
     return NULL;
 }
 
 static bool hash_table_resize(Map hash, size_t new_capacity) {
-    size_t old_capacity = hash->capacity;
     pair_t** old_table = hash->table;
+    hash->table = hash_table_create(new_capacity);
+    if (hash->table == NULL) {
+        hash->table = old_table;
+        return false;
+    }
 
+    size_t old_capacity = hash->capacity;
     hash->capacity = new_capacity;
-    hash->table = hash_table_create(hash->capacity);
-    if (hash->table == NULL) return false;
 
     hash->size = 0;
     hash->deleted = 0;
 
-    for (size_t i = 0 ; i < old_capacity ; i++) {
+    for (size_t i = 0 ; i < old_capacity ; i++) {        
         if (old_table[i]->state == TAKEN) {
             bool ok = map_put(hash, old_table[i]->key, old_table[i]->value);
             if (!ok) return false;
         }
-        else {
-            hash->destroy(old_table[i]->value);
-            free(old_table[i]);
-        }
     }
+    hash_table_destroy(old_table, old_capacity, hash->destroy);
 
     return true;
 }
 
 static void hash_table_destroy(pair_t** table, size_t capacity, void value_destroy(void* elem)) {
     for (size_t i = 0 ; i < capacity ; i++) {
-        value_destroy(table[i]->value);
+        if (table[i]->state != EMPTY) {
+            free(table[i]->key);
+            value_destroy(table[i]->value);
+        }
         free(table[i]);
     }
     free(table);
@@ -202,11 +206,10 @@ static size_t hash_search(Map hash, const char* key) {
     size_t index = hash_get_index(hash, key);
     pair_t* current;
 
-    do {
+    for ( ; hash->table[index]->state != EMPTY ; index = (index+1) % hash->capacity) {
         current = hash->table[index];
         if (current->state == TAKEN && strcmp(current->key, key) == 0) return index;
-        index = (index+1) % hash->capacity;
-    } while (current->state != EMPTY);
+    }
 
     return index;
 }
