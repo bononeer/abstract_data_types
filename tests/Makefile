@@ -14,5 +14,11 @@ queue: ../queue/queue.*
 list: ../list/list.*
 	$(CC) $(CFLAGS) -o $(OUTPUT_FILE) list_test.c ../list/list.c
 
+map: ../map/map.h ../map/hash.c
+	$(CC) $(CFLAGS) -o $(OUTPUT_FILE) map_test.c ../map/hash.c
+
+valgrind: $(OUTPUT_FILE)
+	valgrind --leak-check=full --track-origins=yes --show-reachable=yes --error-exitcode=2 ./$(OUTPUT_FILE)
+
 clean:
 	rm -rf $(OUTPUT_FILE)
