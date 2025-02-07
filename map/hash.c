@@ -1,7 +1,6 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
-#include <stdio.h>
 #include "map.h"
 
 #define INITIAL_CAPACITY 19
@@ -75,12 +74,6 @@ size_t map_size(Map hash) {
 }
 
 bool map_put(Map hash, char* key, void* value) {
-    float charge_factor = (float)(hash->size + hash->deleted) / (float)hash->capacity;
-    if (charge_factor > MAX_CHARGE_FACTOR) {
-        bool ok = hash_table_resize(hash, hash->capacity * VARIATION_CAPACITY);
-        if (!ok) return false;
-    }
-
     size_t index = hash_search(hash, key);
 
     if (hash->table[index]->state == EMPTY) {
@@ -96,6 +89,12 @@ bool map_put(Map hash, char* key, void* value) {
         hash->table[index]->state = TAKEN;
     }
     memcpy(hash->table[index]->value, value, sizeof(void*));
+
+    float charge_factor = (float)(hash->size + hash->deleted) / (float)hash->capacity;
+    if (charge_factor > MAX_CHARGE_FACTOR) {
+        bool ok = hash_table_resize(hash, hash->capacity * VARIATION_CAPACITY);
+        if (!ok) return false;
+    }
 
     return true;
 }
