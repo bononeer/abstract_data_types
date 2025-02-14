@@ -9,16 +9,16 @@ typedef struct stack_t* Stack;
 
 /* Returns an instance of an empty stack. 
 
-POST:
-- if there is not enough memory for the stack, the function will return NULL. */
-Stack stack_create(void);
-
-/* Frees the memory where the stack is allocated 
-
 PRE:
 - elem_destroy is a pointer to a function that destroys the elements stored in the stack.
-If NULL is given, it will destroy the elements with the `free` function from stdlib. */
-void stack_destroy(Stack stack, void (*elem_destroy)(void* elem));
+If NULL is given, it will destroy the elements with the `free` function from stdlib.
+
+POST:
+- if there is not enough memory for the stack, the function will return NULL. */
+Stack stack_create(void (*elem_destroy)(void* elem));
+
+/* Frees the memory where the stack is allocated */
+void stack_destroy(Stack stack);
 
 /* Add `elem`'s value into the top of the stack. 
 

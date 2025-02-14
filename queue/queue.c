@@ -4,6 +4,7 @@
 
 /******************** structure definition ********************/ 
 
+typedef void (*elem_destroy)(void*);
 typedef struct _node node_t;
 
 struct _node {
@@ -14,6 +15,7 @@ struct _node {
 struct queue_t {
     node_t* first;
     node_t* last;
+    elem_destroy destroy;
 };
 
 /******************** static functions declarations ********************/ 

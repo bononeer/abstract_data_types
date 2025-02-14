@@ -7,10 +7,13 @@
 
 /******************** structure definition ********************/ 
 
+typedef void (*elem_destroy)(void*);
+
 struct stack_t {
     void **data;
     size_t quantity;
     size_t capacity;
+    elem_destroy destroy;
 };
 
 /******************** static functions declarations ********************/ 

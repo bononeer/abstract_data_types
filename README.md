@@ -20,7 +20,7 @@ Every ADT is for generic types, which means you could use it with most C datatyp
 An example with ADT Stack:
 
 ```c
-Stack s = stack_create();
+Stack s = stack_create(NULL);
 int num = 1;
 void* top = NULL;
 
@@ -28,13 +28,14 @@ stack_push(s, &num);
 top = stack_pop(s);
 
 int obtained = *(int*)top;
+free(top);
 ```
 
 With the given `.h` file in an ADT directory, you can implement your own version that respects the signatures for its operations.
 
 ## Testing
 
-Each ADT has it own `*_test.c` file that tests their operations, these tests don't depend on the implementation in the `.c` file. You can find these in the [test](tests) directory.
+Each ADT has it own `*_test.c` file that tests their operations, these tests don't depend on the implementation in the `.c` file. You can find these in the [tests](tests) directory.
 
 The file `assert_msg.h` defines a macro used for testing.
 
