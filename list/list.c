@@ -34,24 +34,24 @@ static void node_destroy(node_t* node, void elem_destroy(void* elem));
 
 /******************** List operations definitions ********************/
 
-List list_create(void) {
+List list_create(void (*elem_destroy)(void* elem)) {
     List list = (List)malloc(sizeof(struct list_t));
     if (list == NULL) return NULL;
 
     list->first = NULL;
     list->last = NULL;
     list->length = 0;
+    if (elem_destroy == NULL) list->destroy = free;
 
     return list;
 }
 
-void list_destroy(List list, void (*elem_destroy)(void* elem)) {
+void list_destroy(List list) {
     node_t *current = list->first;
-    if (elem_destroy == NULL) elem_destroy = free;
     while (list->first != NULL) {
         current = list->first;
         list->first = list->first->next;
-        node_destroy(current, elem_destroy);
+        node_destroy(current, list->destroy);
     }
     free(list);
 }

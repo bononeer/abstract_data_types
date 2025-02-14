@@ -27,23 +27,23 @@ static void node_destroy(node_t* node, void elem_destroy(void* elem));
 
 /******************** Queue operations definitions ********************/ 
 
-Queue queue_create(void) {
+Queue queue_create(void (*elem_destroy)(void* elem)) {
     Queue queue = (Queue)malloc(sizeof(struct queue_t));
     if (queue == NULL) return NULL;
 
     queue->first = NULL;
     queue->last = NULL;
+    if (elem_destroy == NULL) queue->destroy = free;
 
     return queue;
 }
 
-void queue_destroy(Queue queue, void (*elem_destroy)(void* elem)) {
+void queue_destroy(Queue queue) {
     node_t *current = queue->first;
-    if (elem_destroy == NULL) elem_destroy = free;
     while (queue->first != NULL) {
         current = queue->first;
         queue->first = queue->first->next;
-        node_destroy(current, elem_destroy);
+        node_destroy(current, queue->destroy);
     }
     free(queue);
 }

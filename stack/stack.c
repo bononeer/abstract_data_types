@@ -1,5 +1,6 @@
 #include <string.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include "stack.h"
 
 #define INITIAL_SIZE 4
@@ -24,7 +25,7 @@ static bool stack_resize(Stack stack, size_t new_size);
 
 /******************** Stack operations definitions ********************/ 
 
-Stack stack_create(void) {
+Stack stack_create(void (*elem_destroy)(void* elem)) {
     Stack stack = (Stack)malloc(sizeof(struct stack_t));
     if (stack == NULL) return NULL;
 
@@ -37,14 +38,15 @@ Stack stack_create(void) {
         return NULL;
     }
     stack->data = data_temp;
+    if (elem_destroy == NULL) elem_destroy = free;
 
     return stack;
 }
 
-void stack_destroy(Stack stack, void (*elem_destroy)(void* elem)) {
-    if (elem_destroy == NULL) elem_destroy = free;
+void stack_destroy(Stack stack) {
     for (size_t i = 0; i < stack->quantity; i++) {
-        elem_destroy(stack->data[i]);
+        printf("\n%d\n", stack->destroy == free);
+        stack->destroy(stack->data[i]);
     }
     free(stack->data);
     free(stack);
