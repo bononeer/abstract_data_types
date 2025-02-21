@@ -20,11 +20,13 @@ Every ADT is for generic types, which means you could use it with most C datatyp
 An example with ADT Stack:
 
 ```c
-Stack s = stack_create(NULL);
-int num = 1;
+Stack s = stack_create(free);
+int* num = (int*)malloc(sizeof(int));
 void* top = NULL;
 
-stack_push(s, &num);
+*num = 10;
+
+stack_push(s, num);
 top = stack_pop(s);
 
 int obtained = *(int*)top;

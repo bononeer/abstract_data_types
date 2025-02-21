@@ -11,7 +11,7 @@ typedef struct queue_t* Queue;
 
 PRE:
 - elem_destroy is a pointer to a function that destroys the elements stored in the queue.
-If NULL is given, it will destroy the elements with the `free` function from stdlib. 
+If NULL is given, it will not free the memory of the elements. 
 
 POST:
 - if there is not enough memory for the queue, the function will return NULL. */
@@ -31,7 +31,7 @@ bool queue_enqueue(Queue queue, void* elem);
 
 POST:
 - If the queue is empty, a NULL pointer will be returned.
-- The returned pointer should be freed when not needed anymore.
+- If the memory was allocated previously, the returned element should be freed when not needed anymore.
 - A void pointer will be returned, the user should cast it to the right type. */
 void* queue_dequeue(Queue queue);
 

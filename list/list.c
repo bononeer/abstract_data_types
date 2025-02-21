@@ -1,5 +1,4 @@
 #include <stdlib.h>
-#include <string.h>
 #include "list.h"
 
 /******************** structure definition ********************/ 
@@ -27,10 +26,8 @@ struct list_iter_t {
 
 /******************** static functions declarations ********************/ 
 
-// Return a node with the given value and a null next node.
 static node_t* node_create(void* value);
-// Frees the memory of a given node.
-static void node_destroy(node_t* node, void elem_destroy(void* elem));
+static void node_destroy(node_t* node, void (*elem_destroy)(void* elem));
 
 /******************** List operations definitions ********************/
 
@@ -41,7 +38,7 @@ List list_create(void (*elem_destroy)(void* elem)) {
     list->first = NULL;
     list->last = NULL;
     list->length = 0;
-    if (elem_destroy == NULL) list->destroy = free;
+    list->destroy = elem_destroy;
 
     return list;
 }
@@ -201,17 +198,12 @@ static node_t* node_create(void* value) {
     if (node == NULL) return NULL;
 
     node->next = NULL;
-    node->value = malloc(sizeof(void*));
-    if (node->value == NULL) {
-        free(node);
-        return NULL;
-    }
-    memcpy(node->value, value, sizeof(void*));
+    node->value = value;
 
     return node;
 }
 
-static void node_destroy(node_t* node, void elem_destroy(void* elem)) {
-    elem_destroy(node->value);
+static void node_destroy(node_t* node, void (*elem_destroy)(void* elem)) {
+    if (elem_destroy != NULL) elem_destroy(node->value);  
     free(node);
 }

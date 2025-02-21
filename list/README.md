@@ -14,7 +14,7 @@ typedef struct list_t* List;
 
 PRE:
 - elem_destroy is a pointer to a function that destroys the elements stored in the list.
-If NULL is given, it will destroy the elements with the `free` function from stdlib.
+If NULL is given, it will not free the memory of the elements. 
 
 POST:
 - if there is not enough memory for the list, the function will return NULL. */
@@ -47,7 +47,7 @@ bool list_insert_last(List list, void* elem);
 
 POST:
 - If the list is empty, a NULL pointer will be returned.
-- The returned pointer should be freed when not needed anymore.
+- If the memory was allocated previously, the returned element should be freed when not needed anymore.
 - A void pointer will be returned, the user should cast it to the right type. */
 void* list_delete_first(List list);
 
@@ -119,7 +119,7 @@ bool list_iter_insert(ListIterator iter, void* elem);
 POST:
 - The next element will be the current element in the iteration.
 - If the list is empty, a NULL pointer will be returned.
-- The returned pointer should be freed when not needed anymore.
+- If the memory was allocated previously, the returned element should be freed when not needed anymore.
 - A void pointer will be returned, the user should cast it to the right type. */
 void* list_iter_delete(ListIterator iter);
 ```

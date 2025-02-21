@@ -34,7 +34,7 @@ bool queue_enqueue(Queue queue, void* elem);
 
 POST:
 - If the queue is empty, a NULL pointer will be returned.
-- The returned pointer should be freed when not needed anymore.
+- If the memory was allocated previously, the returned element should be freed when not needed anymore.
 - A void pointer will be returned, the user should cast it to the right type. */
 void* queue_dequeue(Queue queue);
 
