@@ -1,4 +1,3 @@
-#include <string.h>
 #include <stdlib.h>
 #include "stack.h"
 
@@ -7,26 +6,28 @@
 
 /******************** structure definition ********************/ 
 
+typedef void (*elem_destroy)(void*);
+
 struct stack_t {
     void **data;
     size_t quantity;
     size_t capacity;
+    elem_destroy destroy;
 };
 
 /******************** static functions declarations ********************/ 
 
-/* For a given stack, changes the size of its intern data array for one of the length 
-given. No element is deleted from the stack. Returns false if issue, true if not. */
 static bool stack_resize(Stack stack, size_t new_size);
 
 /******************** Stack operations definitions ********************/ 
 
-Stack stack_create(void) {
+Stack stack_create(void (*elem_destroy)(void* elem)) {
     Stack stack = (Stack)malloc(sizeof(struct stack_t));
     if (stack == NULL) return NULL;
 
     stack->quantity = 0;
     stack->capacity = INITIAL_SIZE;
+    stack->destroy = elem_destroy;
 
     void **data_temp = (void**)malloc(stack->capacity * sizeof(void*));
     if (data_temp == NULL) {
@@ -38,11 +39,8 @@ Stack stack_create(void) {
     return stack;
 }
 
-void stack_destroy(Stack stack, void (*elem_destroy)(void* elem)) {
-    if (elem_destroy == NULL) elem_destroy = free;
-    for (size_t i = 0; i < stack->quantity; i++) {
-        elem_destroy(stack->data[i]);
-    }
+void stack_destroy(Stack stack) {
+    if (stack->destroy != NULL) for (size_t i = 0; i < stack->quantity; i++) (stack->destroy)(stack->data[i]);
     free(stack->data);
     free(stack);
 }
@@ -53,11 +51,7 @@ bool stack_push(Stack stack, void* elem) {
         if (!ok) return false;
     }
 
-    void *new_elem = malloc(sizeof(void*));
-    if (new_elem == NULL) return false;
-
-    memcpy(new_elem, elem, sizeof(void*));
-    stack->data[stack->quantity++] = new_elem;
+    stack->data[stack->quantity++] = elem;
 
     return true;
 }

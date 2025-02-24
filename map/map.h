@@ -19,7 +19,7 @@ typedef struct hash_t* Map;
 
 PRE:
 - `value_destroy` function is the way the value of every `key-value` pair must
-be destroyed. If NULL is given, it wil use `stdlib` `free` function.
+be destroyed. If NULL is given, it will not free the memory of the value. 
 
 POST:
 - if there is not enough memory for the map, the function will return NULL. */
@@ -53,7 +53,7 @@ void* map_get(Map map, const char* key);
 
 POST:
 - If the key is not stored in the map, the function returns NULL.
-- The returned pointer should be freed when not needed anymore.
+- If the memory was allocated previously, the returned element should be freed when not needed anymore.
 - A void pointer will be returned, the user should cast it to the right type. */
 void* map_remove(Map map, char* key);
 
