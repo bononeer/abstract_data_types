@@ -12,6 +12,7 @@ typedef struct {
 static void print_test(bool, const char*);
 static MyStruct* struct_create(char* string, int integer);
 static void struct_destroy(void* value);
+static bool sum_values(const char* key, void* value, void* extra);
 
 static void test_new_map(void) {
     printf("TEST: A newly created map works as expected.\n");
@@ -225,6 +226,94 @@ static void test_emptied_map(void) {
     map_destroy(m);
 }
 
+void test_key_reutilization(void) {
+    printf("TEST: Check that there is no problem when storing a pair with a key from an already deleted one\n");
+
+    Map m = map_create(NULL);
+    char *key = "hello", *value1 = "world!", *value2 = "earth!";
+    void* ptr = NULL;
+
+    map_put(m, key, value1);
+    ptr = map_remove(m, key);
+
+    print_test(map_size(m) == 0, "The size of the map must be 0 after removing its only pair");
+    print_test(!map_contains(m, key), "The key is not contained in the map");
+
+    map_put(m, key, value2);
+
+    print_test(map_size(m) == 1, "The size of the map must be 1 after storing a new pair");
+    print_test(map_contains(m, key), "The key is contained in the map");
+
+    ptr = map_get(m, key);
+    print_test(strcmp((char*)ptr, value1) != 0, "The value asociated to the key is not the one stored the first time");
+    print_test(strcmp((char*)ptr, value2) == 0, "The value asociated to the key is the one stored after reutilizing the key");
+
+    map_destroy(m);
+}
+
+void test_internal_iterator_no_cut_condition(void) {
+    printf("TEST: Verifies that the internal iterator with a visit function that does not have a cut condition works fine\n");
+
+    Map m = map_create(free);
+    int expected_sum = 0, iterator_sum = 0;
+    char current_key[3];
+
+    for (int i = 0 ; i < AMOUNT ; i++) {
+        sprintf(current_key, "%d", i);
+        int* value = (int*)malloc(sizeof(int));
+        print_test(value != NULL, "");
+        *value = i;
+        map_put(m, current_key, value);
+        expected_sum += i;
+    }
+
+    map_for_each(m, sum_values, &iterator_sum);
+    print_test(expected_sum == iterator_sum, "The iterator went through all the pairs in the map");
+
+    map_destroy(m);
+}
+
+void test_iterator_for_empty_map(void) {
+    printf("TEST: An iterator created for an empty map should act as an finished iterator\n");
+
+    Map m = map_create(NULL);
+    MapIterator iter = map_iter_create(m);
+
+    print_test(iter != NULL, "Create a new Map Iterator");
+    print_test(!map_iter_has_next(iter), "An iterator for an empty map must not have pairs to iterate through");
+    print_test(!map_iter_next(iter), "The iterator can not advance to the next pair as there are none to iterate through");
+    print_test(map_iter_get_current(iter) == NULL, "Trying to get the current key must return NULL if there are no pairs to iterate through");
+
+    map_iter_destroy(iter);
+    map_destroy(m);
+}
+
+void test_bulk_iterate_through_a_map(void) {
+    printf("TEST: Iterate through a map with a huge amount of pairs and check that all the iterator operations work correctly");
+
+    Map m = map_create(free);
+    char current_key[5];
+
+    for (int i = 0 ; i < BULK_AMOUNT ; i++) {
+        sprintf(current_key, "%d", i);
+        int* value = (int*)malloc(sizeof(int));
+        print_test(value != NULL, "");
+        *value = i;
+        map_put(m, current_key, value);
+    }
+
+    MapIterator iter = map_iter_create(m);
+    for (int i = 0 ; i < BULK_AMOUNT ; i++) {
+        print_test(map_iter_has_next(iter), "There must still be pairs to iterate through");
+        const char* key = map_iter_get_current(iter);
+        print_test(map_contains(m, key), "The keys from the iteration are all stored in the map");
+        print_test(map_iter_next(iter), "The iterator must be able to advance to the next pair as there are some left");
+    }
+
+    map_iter_destroy(iter);
+    map_destroy(m);
+}
+
 void test_struct_values(void) {
     printf("TEST: Put structs into the map and check that it works correctly\n");
 
@@ -265,6 +354,12 @@ int main(void) {
     test_good_amount_of_pairs();
     test_huge_amount_of_pairs();
     test_emptied_map();
+    test_key_reutilization();
+    test_internal_iterator_no_cut_condition();
+
+    test_iterator_for_empty_map();
+    test_bulk_iterate_through_a_map();
+
     test_struct_values();
 
     return 0;
@@ -298,4 +393,9 @@ void struct_destroy(void* value) {
         free(my_struct->string);
         free(my_struct);
     }
+}
+
+static bool sum_values(const char* key, void* value, void* extra) {
+    *(int*)extra += *(int*)value;
+    return true;
 }

@@ -8,10 +8,12 @@
 
 /* You may change the original type to the name you give 
 to the structure that implements ADT Map 
-In this case: hash_t* */
+In this case: hash_t* ; hash_iter_t */
 
 // A data structure that stores `key-value` pairs.
 typedef struct hash_t* Map;
+// The structur for the ADT Map's external iterator
+typedef struct hash_iter_t* MapIterator;
 
 /******************** Map functions declarations ********************/
 
@@ -67,5 +69,32 @@ the iteration and an extra parameter that could be NULL.
 - `extra` is an extra parameter that could be NULL; if it is not, it must be passed to the
 `visit` function. */
 void map_for_each(Map map, bool visit(const char* key, void* value, void* extra), void* extra);
+
+/******************** Map Iterator functions declarations ********************/
+
+/* Returns an instance of an external iterator for the map. 
+
+POST:
+- if there is not enough memory for the iterator, the function will return NULL.*/
+MapIterator map_iter_create(Map map);
+
+/* Frees the memory where the map iterator is allocated. */
+void map_iter_destroy(MapIterator iter);
+
+/* Returns true if there are pairs left to iterate through, false if not */
+bool map_iter_has_next(const MapIterator iter);
+
+/* Advances the iteration to the next pair.
+
+POST:
+- Returns true if the action was successful, false if not. */
+bool map_iter_next(MapIterator iter);
+
+/* Returns the key of the current pair at the iteration. 
+
+POST:
+- If there are no elements left to iterate through, a NULL pointer will be returned.
+- The key returned should not be modified nor have its memory freed. */
+const char* map_iter_get_current(const MapIterator iter);
 
 #endif // _MAP_H

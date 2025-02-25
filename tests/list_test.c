@@ -271,7 +271,7 @@ void test_iterator_for_empty_list(void) {
     ListIterator iter = list_iter_create(l);
 
     print_test(iter != NULL, "Create a new List Iterator");
-    print_test(!list_iter_has_next(iter), "A iterator for an empty list must not have elements to iterate through");
+    print_test(!list_iter_has_next(iter), "An iterator for an empty list must not have elements to iterate through");
     print_test(!list_iter_next(iter), "The iterator can not advance to the next element as there are none to iterate through inside the list");
     print_test(list_iter_get_current(iter) == NULL, "Trying to get the current element of an iteration with no elements to iterate through returns NULL");
     print_test(list_iter_delete(iter) == NULL, "Trying to delete the current element of an iteration with no elements to iterate through returns NULL");
