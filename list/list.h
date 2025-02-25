@@ -87,7 +87,7 @@ ListIterator list_iter_create(List list);
 /* Frees the memory where the list iterator is allocated. */
 void list_iter_destroy(ListIterator iter);
 
-/* Returns true if there are elements left to iterate though, false if not */
+/* Returns true if there are elements left to iterate through, false if not */
 bool list_iter_has_next(const ListIterator iter);
 
 /* Advances the iteration to the next element.
