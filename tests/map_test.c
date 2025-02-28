@@ -26,7 +26,7 @@ static void test_new_map(void) {
     print_test(map_remove(m, "totally_stored_key") == NULL, "An empty map returns NULL, for any key, if it tries to remove");
     print_test(map_get(m, "MyKey") == NULL, "An empty map returns NULL, for any key, if it tries to get a value");
     print_test(map_get(m, "Hi my name is: ") == NULL, "An empty map returns NULL, for any key, if it tries to get a value");
-    print_test(!map_contains(m, "hasheable string"), "An empty map returns NULL, for any key, if it tries to check is a key is stored");
+    print_test(!map_contains(m, "hashable string"), "An empty map returns NULL, for any key, if it tries to check is a key is stored");
     print_test(!map_contains(m, "i dont know"), "An empty map returns NULL, for any key, if it tries to check is a key is stored");
 
     map_destroy(m);

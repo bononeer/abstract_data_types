@@ -31,7 +31,7 @@ Map map_create(void (*value_destroy)(void* value));
 /* Frees the memory where the map is allocated */
 void map_destroy(Map map);
 
-/* Returns the amount of elements mapped */
+/* Returns the amount of pairs mapped */
 size_t map_size(Map map);
 
 /* If the key is not stored in the map, adds the `key-value` pair to the map; otherwise, 
@@ -75,7 +75,7 @@ void map_for_each(Map map, bool visit(const char* key, void* value, void* extra)
 ### Exteranl Iterator
 
 ```c
-// The structur for the ADT Map's external iterator
+// The structure for the ADT Map's external iterator
 typedef struct map_iter_t* MapIterator;
 
 /* Returns an instance of an external iterator for the map. 

@@ -8,7 +8,7 @@ The following are the ADTs implemented:
 * [Queue](queue)
 * [List](list)
 * [Map](map)
-* SortedMap
+* [BST](bst)
 * PriorityQueue
 
 ## Information
