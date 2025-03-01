@@ -97,7 +97,7 @@ are between `from` and `to`, included.
 
 POST:
 - if there is not enough memory for the iterator, the function will return NULL.*/
-BSTIterator bst_iter_create_range(BST bst, const char *from, const char *to);
+BSTIterator bst_iter_range_create(BST bst, const char *from, const char *to);
 
 /* Frees the memory where the bst iterator is allocated. */
 void bst_iter_destroy(BSTIterator iter);

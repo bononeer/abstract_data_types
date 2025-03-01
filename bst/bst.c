@@ -163,7 +163,7 @@ BSTIterator bst_iter_create(BST bst) {
     return iter;
 }
 
-BSTIterator bst_iter_create_range(BST bst, const char *from, const char *to) {
+BSTIterator bst_iter_range_create(BST bst, const char *from, const char *to) {
     if (bst == NULL) return NULL;
     BSTIterator iter = bst_iter_create_helper(bst, from, to);
     if (iter == NULL) return NULL;
@@ -314,14 +314,10 @@ static char *strdup(const char *src) {
 }
 
 static bool push_node_left_branch(BSTIterator iter, bst_node_t *node) {
+    while (iter->from != NULL && node != NULL && iter->bst->cmp(node->key, iter->from) < 0) node = node->right;
+    while (iter->to != NULL && node != NULL && iter->bst->cmp(node->key, iter->to) > 0) node = node->left;
+    
     if (node == NULL) return true;
-
-    bool reached_left = iter->from != NULL && iter->bst->cmp(node->key, iter->from) < 0;
-    bool reached_right = iter->to != NULL && iter->bst->cmp(node->key, iter->to) > 0;
-    if (reached_left || reached_right) return true;
-
-    while (iter->from != NULL && iter->bst->cmp(node->key, iter->from) < 0) node = node->right;
-    while (iter->to != NULL && iter->bst->cmp(node->key, iter->to) > 0) node = node->left;
     if (!stack_push(iter->remaining, node)) return false;
 
     return push_node_left_branch(iter, node->left);

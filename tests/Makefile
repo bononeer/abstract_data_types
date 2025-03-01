@@ -17,6 +17,9 @@ list: ../list/list.*
 map: ../map/map.h ../map/hash.c
 	$(CC) $(CFLAGS) -o $(OUTPUT_FILE) map_test.c ../map/hash.c
 
+bst: ../bst/bst.* ../bst/stack.*
+	$(CC) $(CFLAGS) -o $(OUTPUT_FILE) bst_test.c ../bst/bst.c ../bst/stack.c
+
 # If valgrind is installed (sudo apt install valgrind)
 valgrind: $(OUTPUT_FILE)
 	valgrind --leak-check=full --track-origins=yes --show-reachable=yes --error-exitcode=2 ./$(OUTPUT_FILE)

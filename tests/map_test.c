@@ -289,7 +289,7 @@ void test_iterator_for_empty_map(void) {
 }
 
 void test_bulk_iterate_through_a_map(void) {
-    printf("TEST: Iterate through a map with a huge amount of pairs and check that all the iterator operations work correctly");
+    printf("TEST: Iterate through a map with a huge amount of pairs and check that all the iterator operations work correctly\n");
 
     Map m = map_create(free);
     char current_key[5];

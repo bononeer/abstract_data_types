@@ -44,7 +44,7 @@ The file `assert_msg.h` defines a macro used for testing.
 To compile a test file for a generic `adt` just write in your command line:
 
 ```shell
-    make adt
+make adt
 ```
 
 ## Compiling
