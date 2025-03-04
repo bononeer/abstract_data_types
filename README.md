@@ -67,3 +67,5 @@ gcc -o main main.c adt.c
 For the **ADT BST**, both the `bst.c` and `stack.c` must be added to the compilation.
 
 ## License
+
+MIT License
