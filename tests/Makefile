@@ -20,6 +20,9 @@ map: ../map/map.h ../map/hash.c
 bst: ../bst/bst.* ../bst/stack.*
 	$(CC) $(CFLAGS) -o $(OUTPUT_FILE) bst_test.c ../bst/bst.c ../bst/stack.c
 
+pqueue: ../priority_queue/
+	$(CC) $(CFLAGS) -o $(OUTPUT_FILE) priority_queue_test.c ../priority_queue/heap.c
+
 # If valgrind is installed (sudo apt install valgrind)
 valgrind: $(OUTPUT_FILE)
 	valgrind --leak-check=full --track-origins=yes --show-reachable=yes --error-exitcode=2 ./$(OUTPUT_FILE)
