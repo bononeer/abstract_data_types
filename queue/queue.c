@@ -3,28 +3,27 @@
 
 /******************** structure definition ********************/ 
 
-typedef void (*elem_destroy)(void*);
-typedef struct _node node_t;
+typedef struct node node_t;
 
-struct _node {
-    void* value;
-    node_t* next;
+struct node {
+    void *value;
+    node_t *next;
 };
 
 struct queue_t {
-    node_t* first;
-    node_t* last;
-    elem_destroy destroy;
+    node_t *first;
+    node_t *last;
+    destroy_func_t destroy;
 };
 
 /******************** static functions declarations ********************/ 
 
-static node_t* node_create(void* value);
-static void node_destroy(node_t* node, void (*elem_destroy)(void* elem));
+static node_t *node_create(void *value);
+static void node_destroy(node_t *node, destroy_func_t elem_destroy);
 
 /******************** Queue operations definitions ********************/ 
 
-Queue queue_create(void (*elem_destroy)(void* elem)) {
+Queue queue_create(destroy_func_t elem_destroy) {
     Queue queue = (Queue)malloc(sizeof(struct queue_t));
     if (queue == NULL) return NULL;
 
@@ -36,6 +35,8 @@ Queue queue_create(void (*elem_destroy)(void* elem)) {
 }
 
 void queue_destroy(Queue queue) {
+    if (queue == NULL) return;
+
     node_t *current = queue->first;
     while (queue->first != NULL) {
         current = queue->first;
@@ -45,8 +46,14 @@ void queue_destroy(Queue queue) {
     free(queue);
 }
 
+bool queue_is_empty(const Queue queue) {
+    return queue != NULL && queue->first == NULL && queue->last == NULL;
+}
+
 bool queue_enqueue(Queue queue, void* elem) {
-    node_t* new_node = node_create(elem);
+    if (queue == NULL) return false;
+
+    node_t *new_node = node_create(elem);
     if (new_node == NULL) return false;
 
     if (queue->last != NULL) queue->last->next = new_node;
@@ -56,11 +63,17 @@ bool queue_enqueue(Queue queue, void* elem) {
     return true;
 }
 
-void* queue_dequeue(Queue queue) {
-    if (queue_is_empty(queue)) return NULL;
+void *queue_front(const Queue queue) {
+    if (queue == NULL || queue_is_empty(queue)) return NULL;
+
+    return queue->first->value;
+}
+
+void *queue_dequeue(Queue queue) {
+    if (queue == NULL || queue_is_empty(queue)) return NULL;
     
-    node_t* first = queue->first;
-    void* deleted = first->value;
+    node_t *first = queue->first;
+    void *deleted = first->value;
 
     queue->first = first->next;
     if (first == queue->last) queue->last = NULL;
@@ -70,20 +83,10 @@ void* queue_dequeue(Queue queue) {
     return deleted;
 }
 
-void* queue_front(const Queue queue) {
-    if (queue_is_empty(queue)) return NULL;
-
-    return queue->first->value;
-}
-
-bool queue_is_empty(const Queue queue) {
-    return queue->first == NULL && queue->last == NULL;
-}
-
 /******************** static functions definitions ********************/
 
-static node_t* node_create(void* value) {
-    node_t* node = (node_t*)malloc(sizeof(struct _node));
+static node_t *node_create(void* value) {
+    node_t *node = (node_t*)malloc(sizeof(struct node));
     if (node == NULL) return NULL;
 
     node->next = NULL;
@@ -92,7 +95,7 @@ static node_t* node_create(void* value) {
     return node;
 }
 
-static void node_destroy(node_t* node, void (*elem_destroy)(void* elem)) {
-    if (elem_destroy != NULL) elem_destroy(node->value);
+static void node_destroy(node_t *node, destroy_func_t elem_destroy) {
+    if (elem_destroy != NULL) (elem_destroy)(node->value);
     free(node);
 }

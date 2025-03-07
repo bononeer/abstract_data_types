@@ -4,48 +4,51 @@
 #include <stdbool.h>
 #include <stddef.h>
 
-/******************** Queue structure definition ********************/ 
+/******************** Queue structure declaration ********************/
 
-typedef struct queue_t* Queue;
+// A function that defines how to destroy a given generic element.
+typedef void (*destroy_func_t)(void*);
+// A data structure that follows the FIFO principle.
+typedef struct queue_t *Queue;
 
-/******************** Queue functions declarations ********************/
+/******************** Queue operations declarations ********************/
 
-/* Returns an instance of an empty queue. 
+/* Returns an instance of an empty Queue. 
 
 PRE:
-- elem_destroy is a pointer to a function that destroys the elements stored in the queue.
-If NULL is given, it will destroy the elements with the `free` function from stdlib. 
+- `elem_destroy` is a pointer to a `destroy_func_t` that defines how to free the memory
+of the elements stored in the Queue. If NULL is given, it will not free the memory of 
+the elements. 
 
 POST:
-- if there is not enough memory for the queue, the function will return NULL. */
-Queue queue_create(void (*elem_destroy)(void* elem));
+- if there is not enough memory for the Queue, the function will return NULL. */
+Queue queue_create(destroy_func_t elem_destroy);
 
-/* Frees the memory where the queue is allocated */
+/* Frees the memory where the Queue is allocated */
 void queue_destroy(Queue queue);
 
-/* Add `elem`'s value at the end of the queue. 
+/* Returns true if the Queue is empty; otherwise, it returns false. */
+bool queue_is_empty(const Queue queue);
+
+/* Adds an element to the end of the Queue.
 
 POST:
-- Returns true if the item was successfully added to the queue, and false if there was an 
+- Returns true if the item was successfully added to the Queue, and false if there was an 
 issue with the operation. */
 bool queue_enqueue(Queue queue, void* elem);
 
-/* Delete and return the value of the element at the front of the queue.
+/* Return the element at the front of the Queue. 
 
 POST:
-- If the queue is empty, a NULL pointer will be returned.
-- If the memory was allocated previously, the returned element should be freed when not needed anymore.
-- A void pointer will be returned, the user should cast it to the right type. */
-void* queue_dequeue(Queue queue);
+- If the Queue is empty, a NULL pointer will be returned. */
+void *queue_front(const Queue queue);
 
-/* Return the value of the element at the front of the queue.
+/* Remove the element at the front of the Queue and return it. 
 
 POST:
-- If the queue is empty, a NULL pointer will be returned.
-- A void pointer will be returned, the user should cast it to the right type.*/
-void* queue_front(const Queue queue);
-
-/* Returns true if the queue is empty; otherwise, it returns false. */
-bool queue_is_empty(const Queue queue);
+- If the Queue is empty, a NULL pointer will be returned.
+- If the memory was allocated previously, the memory of the returned element should be 
+freed when not needed anymore. */
+void *queue_dequeue(Queue queue);
 
 #endif // _QUEUE_H
