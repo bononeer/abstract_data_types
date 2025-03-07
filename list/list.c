@@ -3,35 +3,34 @@
 
 /******************** structure definition ********************/ 
 
-typedef void (*elem_destroy)(void*);
-typedef struct _node node_t;
+typedef struct node node_t;
 
-struct _node {
-    void* value;
-    node_t* next;
+struct node {
+    void *value;
+    node_t *next;
 };
 
 struct list_t {
-    node_t* first;
-    node_t* last;
+    node_t *first;
+    node_t *last;
     size_t length;
-    elem_destroy destroy;
+    destroy_func_t destroy;
 };
 
 struct list_iter_t {
     List list;
-    node_t* current;
-    node_t* past;
+    node_t *current;
+    node_t *past;
 };
 
 /******************** static functions declarations ********************/ 
 
-static node_t* node_create(void* value);
-static void node_destroy(node_t* node, void (*elem_destroy)(void* elem));
+static node_t *node_create(void *value);
+static void node_destroy(node_t *node, destroy_func_t elem_destroy);
 
 /******************** List operations definitions ********************/
 
-List list_create(void (*elem_destroy)(void* elem)) {
+List list_create(destroy_func_t elem_destroy) {
     List list = (List)malloc(sizeof(struct list_t));
     if (list == NULL) return NULL;
 
@@ -44,6 +43,8 @@ List list_create(void (*elem_destroy)(void* elem)) {
 }
 
 void list_destroy(List list) {
+    if (list == NULL) return; 
+
     node_t *current = list->first;
     while (list->first != NULL) {
         current = list->first;
@@ -54,15 +55,17 @@ void list_destroy(List list) {
 }
 
 bool list_is_empty(const List list) {
-    return list->first == NULL && list->last == NULL && list->length == 0;
+    return list != NULL && list->first == NULL && list->last == NULL && list->length == 0;
 }
 
 size_t list_length(const List list) {
-    return list->length;
+    return list != NULL ? list->length : 0;
 }
 
 bool list_insert_first(List list, void* elem) {
-    node_t* new_node = node_create(elem);
+    if (list == NULL) return false;
+    
+    node_t *new_node = node_create(elem);
     if (new_node == NULL) return false;
 
     if (list_is_empty(list)) list->last = new_node;
@@ -75,7 +78,9 @@ bool list_insert_first(List list, void* elem) {
 }
 
 bool list_insert_last(List list, void* elem) {
-    node_t* new_node = node_create(elem);
+    if (list == NULL) return false; 
+
+    node_t *new_node = node_create(elem);
     if (new_node == NULL) return false;
 
     if (list_is_empty(list)) list->first = new_node;
@@ -87,11 +92,23 @@ bool list_insert_last(List list, void* elem) {
     return true;
 }
 
-void* list_delete_first(List list) {
-    if (list_is_empty(list)) return NULL;
+void *list_get_first(const List list) {
+    if (list == NULL || list_is_empty(list)) return NULL;
+
+    return list->first->value;
+}
+
+void *list_get_last(const List list) {
+    if (list == NULL || list_is_empty(list)) return NULL;
+
+    return list->last->value;
+}
+
+void *list_delete_first(List list) {
+    if (list == NULL || list_is_empty(list)) return NULL;
     
-    node_t* first = list->first;
-    void* deleted = first->value;
+    node_t *first = list->first;
+    void *deleted = first->value;
     
     list->first = first->next;
     list->length--;
@@ -102,21 +119,10 @@ void* list_delete_first(List list) {
     return deleted;
 }
 
-void* list_get_first(const List list) {
-    if (list_is_empty(list)) return NULL;
+void list_for_each(List list, visit_func_t visit, void *extra) {
+    if (list == NULL) return;
 
-    return list->first->value;
-}
-
-void* list_get_last(const List list) {
-    if (list_is_empty(list)) return NULL;
-
-    return list->last->value;
-}
-
-void list_for_each(List list, bool visit(void* elem, void* extra), void* extra) {
     node_t *current = list->first;
-
     while(current != NULL && visit(current->value, extra)) {
         current = current->next;
     }
@@ -125,6 +131,8 @@ void list_for_each(List list, bool visit(void* elem, void* extra), void* extra) 
 /******************** List Iterator operations definitions ********************/
 
 ListIterator list_iter_create(List list) {
+    if (list == NULL) return NULL;
+    
     ListIterator iter = (ListIterator)malloc(sizeof(struct list_iter_t));
     if (iter == NULL) return NULL;
 
@@ -136,15 +144,17 @@ ListIterator list_iter_create(List list) {
 }
 
 void list_iter_destroy(ListIterator iter) {
+    if (iter == NULL) return;
+
     free(iter);
 }
 
 bool list_iter_has_next(const ListIterator iter) {
-    return iter->current != NULL;
+    return iter != NULL && iter->current != NULL;
 }
 
 bool list_iter_next(ListIterator iter) {
-    if (!list_iter_has_next(iter)) return false;
+    if (iter == NULL || !list_iter_has_next(iter)) return false;
 
     iter->current = iter->current->next;
     if (iter->past == NULL) iter->past = iter->list->first;
@@ -154,13 +164,15 @@ bool list_iter_next(ListIterator iter) {
 }
 
 void* list_iter_get_current(const ListIterator iter) {
-    if (!list_iter_has_next(iter)) return NULL;
+    if (iter == NULL || !list_iter_has_next(iter)) return NULL;
 
     return iter->current->value;
 }
 
 bool list_iter_insert(ListIterator iter, void* elem) {
-    node_t* new_node = node_create(elem);
+    if (iter == NULL) return false;
+
+    node_t *new_node = node_create(elem);
     if (new_node == NULL) return false;
 
     new_node->next = iter->current;
@@ -175,10 +187,10 @@ bool list_iter_insert(ListIterator iter, void* elem) {
 }
 
 void* list_iter_delete(ListIterator iter) {
-    if (!list_iter_has_next(iter)) return NULL;
+    if (iter == NULL || !list_iter_has_next(iter)) return NULL;
 
     node_t *current = iter->current, *first = iter->list->first, *last = iter->list->last;
-    void* deleted = iter->current->value;
+    void *deleted = iter->current->value;
 
     if (first == current) iter->list->first = first->next;
     if (last == current) iter->list->last = iter->past;
@@ -193,8 +205,8 @@ void* list_iter_delete(ListIterator iter) {
 
 /******************** static functions definitions ********************/
 
-static node_t* node_create(void* value) {
-    node_t* node = (node_t*)malloc(sizeof(struct _node));
+static node_t *node_create(void* value) {
+    node_t *node = (node_t*)malloc(sizeof(struct node));
     if (node == NULL) return NULL;
 
     node->next = NULL;
@@ -203,7 +215,7 @@ static node_t* node_create(void* value) {
     return node;
 }
 
-static void node_destroy(node_t* node, void (*elem_destroy)(void* elem)) {
-    if (elem_destroy != NULL) elem_destroy(node->value);  
+static void node_destroy(node_t* node, destroy_func_t elem_destroy) {
+    if (elem_destroy != NULL) (elem_destroy)(node->value);  
     free(node);
 }
