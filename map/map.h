@@ -4,62 +4,63 @@
 #include <stdbool.h>
 #include <stddef.h>
 
-/******************** Map and Iterator structures definitions ********************/ 
+/******************** Map structures declarations ********************/
 
-/* You may change the original type to the name you give 
-to the structure that implements ADT Map 
-In this case: hash_t* ; hash_iter_t */
-
+// A function that defines how to destroy a given generic element.
+typedef void (*destroy_func_t)(void*);
+/* A function for the internal iterators which returns a boolean value to decide if the 
+iteration continues or not. It receives an `extra` parameter that can be NULL. */
+typedef bool (*visit_func_t)(const char*, void*, void *extra);
 // A data structure that stores `key-value` pairs.
-typedef struct hash_t* Map;
-// The structure for the ADT Map's external iterator
-typedef struct hash_iter_t* MapIterator;
+typedef struct hash_t *Map;
+// The external iterator for the Map
+typedef struct hash_iter_t *MapIterator;
 
-/******************** Map functions declarations ********************/
+/******************** Map operations declarations ********************/
 
-/* Returns an instance of an empty map. 
+/* Returns an instance of an empty Map. 
 
 PRE:
-- `value_destroy` function is the way the value of every `key-value` pair must
-be destroyed. If NULL is given, it will not free the memory of the value. 
+- `value_destroy` is a pointer to a `destroy_func_t` that defines how to free the memory
+of the value of the pairs stored in the Map. If NULL is given, it will not free the memory 
+of the values. 
 
 POST:
-- if there is not enough memory for the map, the function will return NULL. */
-Map map_create(void (*value_destroy)(void* value));
+- if there is not enough memory for the Map, the function will return NULL. */
+Map map_create(destroy_func_t value_destroy);
 
-/* Frees the memory where the map is allocated */
+/* Frees the memory where the Map is allocated. */
 void map_destroy(Map map);
 
-/* Returns the amount of pairs mapped */
+/* Returns the amount of pairs stored in the Map. */
 size_t map_size(Map map);
 
-/* If the key is not stored in the map, adds the `key-value` pair to the map; otherwise, 
+/* If the key is not stored in the Map, adds the `key-value` pair to the Map; otherwise, 
 updates the value of the pair.
 
 POST:
-- Returns true if the item was successfully added to the map, and false if there was an 
+- Returns true if the item was successfully added to the Map, and false if there was an 
 issue with the operation. */
-bool map_put(Map map, char* key, void* value);
+bool map_put(Map map, char *key, void *value);
 
-/* Returns true if the key is stored in the map, false if not. */
-bool map_contains(Map map, const char* key);
+/* Returns true if the key is stored in the Map, false if not. */
+bool map_contains(Map map, const char *key);
 
-/* Return the value of the pair with the given key.
+/* Return the value of the pair for the given key.
 
 POST:
-- If the key is not stored in the map, the function returns NULL.
-- A void pointer will be returned, the user should cast it to the right type. */
-void* map_get(Map map, const char* key);
+- If the key is not stored in the Map, the function returns NULL. */
+void *map_get(Map map, const char *key);
 
 /* Remove and return the value of the pair with the given key. 
 
 POST:
-- If the key is not stored in the map, the function returns NULL.
-- If the memory was allocated previously, the returned element should be freed when not needed anymore.
-- A void pointer will be returned, the user should cast it to the right type. */
-void* map_remove(Map map, char* key);
+- If the key is not stored in the Map, the function returns NULL.
+- If the memory was allocated previously, the returned element should be freed when not 
+needed anymore. */
+void *map_remove(Map map, char *key);
 
-/* The internal iterator of the map. Iterates through the pairs of the map in no order, 
+/* The internal iterator of the Map. Iterates through the pairs of the Map in no order, 
 applying the visit function to each one. If `visit(key, value, ...)` return false, the 
 iteration stops. 
 
@@ -68,20 +69,20 @@ PRE:
 the iteration and an extra parameter that could be NULL.
 - `extra` is an extra parameter that could be NULL; if it is not, it must be passed to the
 `visit` function. */
-void map_for_each(Map map, bool visit(const char* key, void* value, void* extra), void* extra);
+void map_for_each(Map map, visit_func_t visit, void* extra);
 
 /******************** Map Iterator functions declarations ********************/
 
-/* Returns an instance of an external iterator for the map. 
+/* Returns an instance of an external iterator for the Map. 
 
 POST:
-- if there is not enough memory for the iterator, the function will return NULL.*/
+- if there is not enough memory for the iterator, the function will return NULL. */
 MapIterator map_iter_create(Map map);
 
-/* Frees the memory where the map iterator is allocated. */
+/* Frees the memory where the Map iterator is allocated. */
 void map_iter_destroy(MapIterator iter);
 
-/* Returns true if there are pairs left to iterate through, false if not */
+/* Returns true if there are pairs left to iterate through, false if not. */
 bool map_iter_has_next(const MapIterator iter);
 
 /* Advances the iteration to the next pair.
@@ -93,8 +94,7 @@ bool map_iter_next(MapIterator iter);
 /* Returns the key of the current pair at the iteration. 
 
 POST:
-- If there are no elements left to iterate through, a NULL pointer will be returned.
-- The key returned should not be modified nor have its memory freed. */
-const char* map_iter_get_current(const MapIterator iter);
+- If there are no elements left to iterate through, a NULL pointer will be returned. */
+const char *map_iter_get_current(const MapIterator iter);
 
 #endif // _MAP_H
