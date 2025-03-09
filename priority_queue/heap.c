@@ -11,12 +11,12 @@ struct heap_t {
     size_t size;
     size_t capacity;
     cmp_func_t cmp;
-    elem_destroy_t destroy;
+    destroy_func_t destroy;
 };
 
 /******************** static functions declarations ********************/ 
 
-static PriorityQueue heap_create(size_t initial_capacity, size_t initial_size, cmp_func_t cmp, elem_destroy_t elem_destroy);
+static PriorityQueue heap_create(size_t initial_capacity, size_t initial_size, cmp_func_t cmp, destroy_func_t elem_destroy);
 static bool heap_resize(PriorityQueue heap, size_t new_capacity);
 static void up_heap(void *arr[], cmp_func_t cmp, size_t index);
 static void down_heap(void *arr[], cmp_func_t cmp, size_t index, size_t length);
@@ -28,11 +28,11 @@ static void swap(void **ptr1, void **ptr2);
 
 /******************** PriorityQueue operations definitions ********************/ 
 
-PriorityQueue p_queue_create(cmp_func_t cmp,  elem_destroy_t elem_destroy) {
+PriorityQueue p_queue_create(cmp_func_t cmp,  destroy_func_t elem_destroy) {
     return heap_create(INITIAL_CAPACITY, 0, cmp, elem_destroy);
 }
 
-PriorityQueue p_queue_create_array(void *arr[], size_t arr_len, cmp_func_t cmp,  elem_destroy_t elem_destroy) {
+PriorityQueue p_queue_create_array(void *arr[], size_t arr_len, cmp_func_t cmp,  destroy_func_t elem_destroy) {
     PriorityQueue heap = heap_create(INITIAL_CAPACITY >= arr_len ? INITIAL_CAPACITY : arr_len, arr_len, cmp, elem_destroy);
     if (heap == NULL) return NULL;
 
@@ -43,23 +43,37 @@ PriorityQueue p_queue_create_array(void *arr[], size_t arr_len, cmp_func_t cmp, 
 }
 
 void p_queue_destroy(PriorityQueue heap) {
+    if (heap == NULL) return;
+
     if (heap->destroy != NULL) for (size_t i = 0 ; i < heap->size ; i++) (heap->destroy)(heap->data[i]);
     free(heap->data);
     free(heap);
 }
 
+bool p_queue_is_empty(const PriorityQueue heap) {
+    return heap != NULL && heap->size == 0;
+}
+
+size_t p_queue_size(const PriorityQueue heap) {
+    return heap != NULL ? heap->size : 0;
+}
+
 bool p_queue_enqueue(PriorityQueue heap, void *elem) {
+    if (heap == NULL) return false;
     if (heap->size == heap->capacity) if (!heap_resize(heap, heap->capacity * VARIATION_CAPACITY)) return false;
 
     heap->data[heap->size] = elem;
-    up_heap(heap->data, heap->cmp, heap->size);
-    heap->size++;
+    up_heap(heap->data, heap->cmp, heap->size++);
 
     return true;
 }
 
-void* p_queue_dequeue(PriorityQueue heap) {
-    if (p_queue_is_empty(heap)) return NULL;
+void *p_queue_max(const PriorityQueue heap) {
+    return heap != NULL && !p_queue_is_empty(heap) ? heap->data[0] : NULL;
+}
+
+void *p_queue_dequeue(PriorityQueue heap) {
+    if (heap == NULL || p_queue_is_empty(heap)) return NULL;
     if (heap->size * 2 * VARIATION_CAPACITY <= heap->capacity && heap->capacity >= INITIAL_CAPACITY * VARIATION_CAPACITY) if (!heap_resize(heap, heap->capacity / VARIATION_CAPACITY)) return NULL;
 
     void *deleted = heap->data[0];
@@ -71,23 +85,9 @@ void* p_queue_dequeue(PriorityQueue heap) {
     return deleted;
 }
 
-void* p_queue_max(const PriorityQueue heap) {
-    if (p_queue_is_empty(heap)) return NULL;
-
-    return heap->data[0];
-}
-
-bool p_queue_is_empty(const PriorityQueue heap) {
-    return heap->size == 0;
-}
-
-size_t p_queue_size(const PriorityQueue heap) {
-    return heap->size;
-}
-
 /******************** static functions definitions ********************/
 
-static PriorityQueue heap_create(size_t initial_capacity, size_t initial_size, cmp_func_t cmp, elem_destroy_t elem_destroy) {
+static PriorityQueue heap_create(size_t initial_capacity, size_t initial_size, cmp_func_t cmp, destroy_func_t elem_destroy) {
     PriorityQueue heap = (PriorityQueue)malloc(sizeof(struct heap_t));
     if (heap == NULL) return NULL;
 

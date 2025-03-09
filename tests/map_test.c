@@ -13,6 +13,8 @@ static void print_test(bool, const char*);
 static MyStruct* struct_create(char* string, int integer);
 static void struct_destroy(void* value);
 static bool sum_values(const char* key, void* value, void* extra);
+static bool smaller_than_pi(const char *key, void *value, void *extra);
+static bool sum_key_length(const char *key, void *value, void *extra);
 
 static void test_new_map(void) {
     printf("TEST: A newly created map works as expected.\n");
@@ -273,6 +275,46 @@ void test_internal_iterator_no_cut_condition(void) {
     map_destroy(m);
 }
 
+void test_internal_iterator_cut_condition(void) {
+    printf("TEST: Verifies that the internal iterator with a visit function that has a cut condition works fine\n");
+
+    Map m = map_create(free);
+    int counter = 0;
+    char current_key[3];
+
+    for (int i = 0 ; i < AMOUNT ; i++) {
+        sprintf(current_key, "%d", i);
+        float* value = (float*)malloc(sizeof(float));
+        print_test(value != NULL, "");
+        *value = (float)i * 0.25f;
+        map_put(m, current_key, value);
+    }
+
+    map_for_each(m, smaller_than_pi, &counter);
+    print_test(map_size(m) > counter, "The iteration was stopped before iterating through every element because the cut condition for the visit function was met");
+
+    map_destroy(m);
+}
+
+void test_internal_iterator_keys(void) {
+    printf("TEST: Check that the internal iterator visit function works fine with the key of the current element\n");
+
+    Map m = map_create(NULL);
+    size_t actual_len = 0, expected_len = 0;
+    char *keys[] = {"Hello", "World", "My", "Name", "Is"};
+    int keys_len = 5;
+
+    for (int i = 0 ; i < keys_len ; i++) {
+        map_put(m, keys[i], 0);
+        actual_len += strlen(keys[i]);
+    }
+
+    map_for_each(m, sum_key_length, &expected_len);
+    print_test(expected_len == actual_len, "Every key from the iteration is the expected one");
+
+    map_destroy(m);
+}
+
 void test_iterator_for_empty_map(void) {
     printf("TEST: An iterator created for an empty map should act as an finished iterator\n");
 
@@ -302,15 +344,20 @@ void test_bulk_iterate_through_a_map(void) {
         map_put(m, current_key, value);
     }
 
+    Map already_seen = map_create(NULL);
+
     MapIterator iter = map_iter_create(m);
     for (int i = 0 ; i < BULK_AMOUNT ; i++) {
         print_test(map_iter_has_next(iter), "There must still be pairs to iterate through");
         const char* key = map_iter_get_current(iter);
         print_test(map_contains(m, key), "The keys from the iteration are all stored in the map");
+        print_test(!map_contains(already_seen, key), "All the elements should be iterated through one time with the external iterator");
+        map_put(already_seen, (char*)key, map_get(m, key));
         print_test(map_iter_next(iter), "The iterator must be able to advance to the next pair as there are some left");
     }
 
     map_iter_destroy(iter);
+    map_destroy(already_seen);
     map_destroy(m);
 }
 
@@ -347,7 +394,6 @@ void test_struct_values(void) {
 }
 
 int main(void) {
-    
     test_new_map();
     test_destroy();
     test_map_one_pair();
@@ -356,6 +402,8 @@ int main(void) {
     test_emptied_map();
     test_key_reutilization();
     test_internal_iterator_no_cut_condition();
+    test_internal_iterator_cut_condition();
+    test_internal_iterator_keys();
 
     test_iterator_for_empty_map();
     test_bulk_iterate_through_a_map();
@@ -395,7 +443,17 @@ void struct_destroy(void* value) {
     }
 }
 
-static bool sum_values(const char* key, void* value, void* extra) {
+bool sum_values(const char* key, void* value, void* extra) {
     *(int*)extra += *(int*)value;
+    return true;
+}
+
+bool smaller_than_pi(const char *key, void *value, void *extra) {
+    *(int*)extra += 1;
+    return *(float*)value < 3.1416;
+}
+
+bool sum_key_length(const char *key, void *value, void *extra) {
+    *(size_t*)extra += strlen(key);
     return true;
 }

@@ -10,15 +10,15 @@ typedef struct _bst_node bst_node_t;
 struct _bst_node {
     char *key;
     void *value;
-    bst_node_t* left;
-    bst_node_t* right;
+    bst_node_t *left;
+    bst_node_t *right;
 };
 
 struct bst_t {
-    bst_node_t* root;
+    bst_node_t *root;
     size_t size;
     cmp_func_t cmp;
-    value_destroy_t destroy;
+    destroy_func_t destroy;
 };
 
 struct bst_iter_t {
@@ -30,11 +30,11 @@ struct bst_iter_t {
 
 /******************** static functions declarations ********************/ 
 
-static void bst_destroy_helper(bst_node_t *node, value_destroy_t value_destroy);
+static void bst_destroy_helper(bst_node_t *node, destroy_func_t value_destroy);
 static bool bst_for_each_helper(bst_node_t *node, visit_func_t visit, void *extra, const char *from, const char *to, cmp_func_t cmp);
-static BSTIterator bst_iter_create_helper(BST bst, const char *from, const char* to);
+static BSTIterator bst_iter_create_helper(BST bst, const char *from, const char *to);
 static bst_node_t *node_create(const char *key, void *value);
-static void node_destroy(bst_node_t *node, value_destroy_t value_destroy);
+static void node_destroy(bst_node_t *node, destroy_func_t value_destroy);
 static bst_node_t *bst_search(BST bst, const char *key);
 static bst_node_t *bst_search_father(BST bst, const char *key);
 static bst_node_t *bst_search_father_helper(BST bst, bst_node_t *father, bst_node_t *node, const char *key);
@@ -42,12 +42,12 @@ static bst_node_t *get_child(bst_node_t *father, const char *key, cmp_func_t cmp
 static unsigned char direct_children(bst_node_t *node);
 static bst_node_t *get_only_child(bst_node_t *node);
 static char *find_heir(bst_node_t *node);
-static char *strdup(const char *src);
 static bool push_node_left_branch(BSTIterator iter, bst_node_t *node);
+static char *strdup(const char *src);
 
 /******************** BST operations definitions ********************/
 
-BST bst_create(cmp_func_t cmp, value_destroy_t value_destroy) {
+BST bst_create(cmp_func_t cmp, destroy_func_t value_destroy) {
     BST bst = (BST)malloc(sizeof(struct bst_t));
     if (bst == NULL) return NULL;
 
@@ -68,8 +68,7 @@ void bst_destroy(BST bst) {
 }
 
 size_t bst_size(BST bst) {
-    if (bst == NULL ) return 0;
-    return bst->size;
+    return bst != NULL ? bst->size : 0;
 }
 
 bool bst_put(BST bst, char *key, void *value) {
@@ -98,10 +97,7 @@ bool bst_put(BST bst, char *key, void *value) {
 }
 
 bool bst_contains(BST bst, const char *key) {
-    if (bst == NULL) return false;
-    bst_node_t *node = bst_search(bst, key);
-
-    return node != NULL;
+    return bst != NULL && bst_search(bst, key) != NULL;
 }
 
 void *bst_get(BST bst, const char *key) {
@@ -156,7 +152,6 @@ void bst_for_each_range(BST bst, const char *from, const char *to, visit_func_t 
 /******************** BST Iterator operations definitions ********************/
 
 BSTIterator bst_iter_create(BST bst) {
-    if (bst == NULL) return NULL;
     BSTIterator iter = bst_iter_create_helper(bst, NULL, NULL);
     if (iter == NULL) return NULL;
     
@@ -164,7 +159,6 @@ BSTIterator bst_iter_create(BST bst) {
 }
 
 BSTIterator bst_iter_range_create(BST bst, const char *from, const char *to) {
-    if (bst == NULL) return NULL;
     BSTIterator iter = bst_iter_create_helper(bst, from, to);
     if (iter == NULL) return NULL;
     
@@ -200,7 +194,7 @@ const char *bst_iter_get_current(BSTIterator iter) {
 
 /******************** static functions definitions ********************/
 
-static void bst_destroy_helper(bst_node_t *node, value_destroy_t value_destroy) {
+static void bst_destroy_helper(bst_node_t *node, destroy_func_t value_destroy) {
     if (node == NULL) return;
 
     bst_destroy_helper(node->left, value_destroy);
@@ -223,7 +217,9 @@ static bool bst_for_each_helper(bst_node_t *node, visit_func_t visit, void *extr
     return true;
 }
 
-static BSTIterator bst_iter_create_helper(BST bst, const char *from, const char* to) {
+static BSTIterator bst_iter_create_helper(BST bst, const char *from, const char *to) {
+    if (bst == NULL) return NULL;
+    
     BSTIterator iter = (BSTIterator)malloc(sizeof(struct bst_iter_t));
     if (iter == NULL) return NULL;
 
@@ -261,13 +257,13 @@ static bst_node_t *node_create(const char *key, void *value) {
     return node;
 }
 
-static void node_destroy(bst_node_t* node, value_destroy_t value_destroy) {
+static void node_destroy(bst_node_t *node, destroy_func_t value_destroy) {
     if (value_destroy != NULL) (value_destroy)(node->value);
     free(node->key);
     free(node);
 }
 
-static bst_node_t *bst_search(BST bst, const char* key) {
+static bst_node_t *bst_search(BST bst, const char *key) {
     bst_node_t *father = bst_search_father(bst, key);
 
     return get_child(father, key, bst->cmp);
@@ -277,7 +273,7 @@ static bst_node_t *bst_search_father(BST bst, const char *key) {
     return bst_search_father_helper(bst, bst->root, bst->root, key);
 }
 
-static bst_node_t *bst_search_father_helper(BST bst, bst_node_t *father, bst_node_t *node, const char* key) {
+static bst_node_t *bst_search_father_helper(BST bst, bst_node_t *father, bst_node_t *node, const char *key) {
     if (node == NULL || bst->cmp(key, node->key) == 0) return father;
     
     if (bst->cmp(key, node->key) < 0) return bst_search_father_helper(bst, node, node->left, key);
@@ -305,14 +301,6 @@ static char *find_heir(bst_node_t *node) {
     return node->right == NULL ? node->key : find_heir(node->right); 
 }
 
-static char *strdup(const char *src) {
-    char *string = (char*)malloc((strlen(src)+1) * sizeof(char));
-    if (string == NULL) return NULL;
-    strcpy(string, src);
-
-    return string;
-}
-
 static bool push_node_left_branch(BSTIterator iter, bst_node_t *node) {
     while (iter->from != NULL && node != NULL && iter->bst->cmp(node->key, iter->from) < 0) node = node->right;
     while (iter->to != NULL && node != NULL && iter->bst->cmp(node->key, iter->to) > 0) node = node->left;
@@ -321,4 +309,12 @@ static bool push_node_left_branch(BSTIterator iter, bst_node_t *node) {
     if (!stack_push(iter->remaining, node)) return false;
 
     return push_node_left_branch(iter, node->left);
+}
+
+static char *strdup(const char *src) {
+    char *string = (char*)malloc((strlen(src)+1) * sizeof(char));
+    if (string == NULL) return NULL;
+    strcpy(string, src);
+
+    return string;
 }
