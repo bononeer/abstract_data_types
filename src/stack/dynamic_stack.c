@@ -36,7 +36,7 @@ void stack_destroy(void *ptr) {
 
     stack_t *stack = (stack_t *) ptr;
 
-    if (stack->destroy) for (size_t i = 0 ; i < stack->quantity ; i++) stack->destroy(stack->data + i); 
+    if (stack->destroy) for (size_t i = 0 ; i < stack->quantity ; i++) stack->destroy(*(stack->data + i)); 
 
     free(stack->data);
     free(stack);

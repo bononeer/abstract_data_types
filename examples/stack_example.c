@@ -7,32 +7,28 @@
 // Check if a stack of integers is ordered. The stack is sorted if, from top to 
 // bottom, the following number is greater than the last one seen.
 bool ordered_stack(stack_t *stack) {
-    // an empty stack will be considered ordered
     if (stack_is_empty(stack)) {
         return true;
     }
 
-    // already checked that the stack is not empty, won't have to worry about
-    // ENODATA, can pop freely. (Could still have ENOMEM, but not probable for
-    // this example)
-    int top = *(int *) stack_pop(stack);
+    int *num = (int *) stack_pop(stack);
+    if (!num) return false;
 
     bool ok = ordered_stack(stack);
+
     if (!ok) {
+        stack_push(stack, num);
         return false;
     }
 
-    // check for that stack is not empty to prevent ENODATA when all the elements
-    // were popped recursively
     if (!stack_is_empty(stack)) {
-        if (top > *(int *) stack_top(stack)) {
+        int *top = (int *) stack_top(stack);
+        if (!top || *top < *num) {
+            stack_push(stack, num);
             return false;
         }
     }
-
-    // add back the top recurisvely to not lose any data, and to keep the checks
-    // correctly for each recursion
-    stack_push(stack, &top);
+    stack_push(stack, num);
 
     return true;
 }
@@ -54,32 +50,39 @@ bool balanced_sequence(char *seq) {
         }
 
         if ((seq[i] == ')' || seq[i] == '}' || seq[i] == ']') && stack_is_empty(aux)) {
+            stack_destroy(aux);
             return false;
         }
 
         if (seq[i] == ')' && *(char *) stack_top(aux) != '(') {
+            stack_destroy(aux);
             return false;
         }
 
         if (seq[i] == '}' && *(char *) stack_top(aux) != '{') {
+            stack_destroy(aux);
             return false;
         }
 
         if (seq[i] == ']' && *(char *) stack_top(aux) != '[') {
+            stack_destroy(aux);
             return false;
         }
 
         stack_pop(aux);
     }
 
-    return stack_is_empty(aux);
+    bool ok = stack_is_empty(aux);
+
+    stack_destroy(aux);
+
+    return ok;
 }
 
 /* ################################## Main ################################## */
 
 int main(void) {
     errno = 0;
-
     // Stacks that won't free the memory of its elements.
     stack_t *my_stack = stack_create(NULL);
     stack_t *other_stack = stack_create(NULL);
@@ -90,7 +93,6 @@ int main(void) {
         stack_push(my_stack, &nums[i]);
         stack_push(other_stack, &nums2[i]);
     }
-
 
     printf("my_stack is an ordered Stack: %s\n", ordered_stack(my_stack) ? "true" : "false");
     printf("other_stack is an ordered Stack: %s\n", ordered_stack(other_stack) ? "true" : "false");
@@ -108,5 +110,6 @@ int main(void) {
     printf("%s is balanced: %s\n", s3, balanced_sequence(s3) ? "true" : "false");
     printf("%s is balanced: %s\n", s4, balanced_sequence(s4) ? "true" : "false");
 
+    if (errno != 0) return -errno;
     return 0;
 }

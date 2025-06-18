@@ -18,7 +18,7 @@ Every ADT has its own [header](include) file and its [implementation](src) files
 
 All of the ADT are intended to be used for the generic type (`void *`).
 
-If you are not sure how to use an ADT, check [examples](examples). Test cases for the ADTs are provided in the [tests](tests) directory, where you can execute them with its [Makefile](tests/Makefile).
+If you are not sure how to use an ADT, check [examples](examples). Test cases for the ADTs are provided in the [tests](tests) directory, you can compile them with the *test* target from the [Makefile](Makefile).
 
 ## ADTs
 

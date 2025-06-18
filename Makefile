@@ -11,9 +11,12 @@ OBJS = $(SRCS:.c=.o)
 NAME = adts
 LIB = lib$(NAME).a
 
-# Compile
+# Compile your file
 FILES = ./examples/stack_example.c
 OUTPUT = xmpl
+
+# Testing
+ADT = stack
 
 $(LIB): $(OBJS)
 	ar rcs $@ $^
@@ -25,5 +28,18 @@ $(LIB): $(OBJS)
 compile:
 	$(CC) $(CFLAGS) $(FILES) -Iinclude -L. -l$(NAME) -o $(OUTPUT)
 
+valgrind: compile vlgrd
+
+vlgrd: 
+	valgrind --leak-check=full --track-origins=yes --show-reachable=yes --error-exitcode=2 ./$(OUTPUT)
+
+debug: compile gdb
+
+gdb:
+	gdb ./$(OUTPUT)
+
+test: ./tests
+	$(CC) $(CFLAGS) ./tests/$(ADT)_test.c ./tests/testaux.* -Iinclude -L. -l$(NAME) -o test
+
 clean:
-	rm -f $(LIB)
+	rm -f $(LIB) test $(OUTPUT)
