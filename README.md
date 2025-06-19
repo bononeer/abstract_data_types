@@ -1,6 +1,6 @@
 # Abstract Data Types
 
-[![Versión](https://img.shields.io/badge/versión-0.1.2-red)](https://github.com/tu-usuario/tu-repo/releases)
+[![Versión](https://img.shields.io/badge/versión-0.2-red)](https://github.com/tu-usuario/tu-repo/releases)
 
 Repository for my Abstract Data types Library for C Language.
 
@@ -25,6 +25,7 @@ If you are not sure how to use an ADT, check [examples](examples). Test cases fo
 The following are the implemented ADTs:
 
 - ***[Stack](include/adt/stack.h)***
+- ***[Queue](include/adt/queue.h)***
 
 ## Compilation
 

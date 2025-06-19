@@ -12,11 +12,11 @@ NAME = adts
 LIB = lib$(NAME).a
 
 # Compile your file
-FILES = ./examples/stack_example.c
+FILES = ./examples/queue_example.c
 OUTPUT = xmpl
 
 # Testing
-ADT = stack
+ADT = queue
 
 $(LIB): $(OBJS)
 	ar rcs $@ $^
