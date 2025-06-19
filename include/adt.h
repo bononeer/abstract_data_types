@@ -10,7 +10,7 @@
  * 
  * @author bononeer (bonoe.neer@gmail.com)
  * @date 2025-06-17
- * @version 0.1.1
+ * @version 0.1.2
  * 
  * @copyright Copyright (c) 2025
  */

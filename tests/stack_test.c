@@ -70,7 +70,7 @@ void test_lifo_property(void) {
 }
 
 void test_empty_stack(void) {
-    test_start("Push elements into the stack, pop them all, then check that the empty stack is the same as a newly created one");
+    test_start("Push elements into the Stack, pop them all, then check that the empty Stack is the same as a newly created one");
 
     stack_t *stack = stack_create(NULL);
     int nums[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};

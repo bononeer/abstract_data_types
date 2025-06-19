@@ -42,8 +42,8 @@ void stack_destroy(void *ptr) {
     free(stack);
 }
 
-bool stack_is_empty(const stack_t *stack) {
-    return !err_null_ptr((stack_t *) stack) && stack->quantity == 0;
+bool stack_is_empty(stack_t *stack) {
+    return !err_null_ptr(stack) && stack->quantity == 0;
 }
 
 void stack_push(stack_t *stack, void *elem) {
@@ -64,8 +64,8 @@ void *stack_pop(stack_t *stack) {
     return removed;
 }
 
-void *stack_top(const stack_t *stack) {
-    if (err_empty_stack((stack_t *) stack)) return NULL;
+void *stack_top(stack_t *stack) {
+    if (err_empty_stack(stack)) return NULL;
 
     return *(stack->data + stack->quantity - 1);
 }

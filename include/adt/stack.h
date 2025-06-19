@@ -15,7 +15,7 @@ typedef struct dynamic_stack stack_t;
 /**
  * @brief Initialize a new empty Stack.
  * 
- * @param destroy Describes the way to destroy the elements stored when 
+ * @param elem_destroy Describes the way to destroy the elements stored when 
  * `stack_destroy` is used with this Stack.
  * @return Pointer to the new Stack.
  * 
@@ -39,7 +39,7 @@ void stack_destroy(void *stack);
  * @retval `false` otherwise; check `errno` for:
  * @retval - EINVAL
  */
-bool stack_is_empty(const stack_t *stack);
+bool stack_is_empty(stack_t *stack);
 
 /**
  * @brief Add a new element to the top of the Stack.
@@ -73,6 +73,6 @@ void *stack_pop(stack_t *stack);
  * @retval - EINVAL
  * @retval - ENODATA
  */
-void *stack_top(const stack_t *stack);
+void *stack_top(stack_t *stack);
 
 #endif // _STACK_H
