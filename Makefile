@@ -12,11 +12,11 @@ NAME = adts
 LIB = lib$(NAME).a
 
 # Compile your file
-FILES = ./examples/queue_example.c
+FILES = ./examples/list_example.c
 OUTPUT = xmpl
 
 # Testing
-ADT = queue
+ADT = list
 
 $(LIB): $(OBJS)
 	ar rcs $@ $^
@@ -38,7 +38,12 @@ debug: compile gdb
 gdb:
 	gdb ./$(OUTPUT)
 
-test: ./tests
+test: tstclean tst  
+
+tstclean:
+	rm -f test
+
+tst: ./tests
 	$(CC) $(CFLAGS) ./tests/$(ADT)_test.c ./tests/testaux.* -Iinclude -L. -l$(NAME) -o test
 
 clean:

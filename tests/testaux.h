@@ -13,6 +13,7 @@
 #include <stdio.h>
 #include "adt/adtcomm.h"
 
+#define MID_AMOUNT 100
 #define BULK_AMOUNT 100000
 
 /* ############################ Test Operations ############################# */
@@ -138,5 +139,17 @@ int floatcmp(const void *e1, const void *e2);
  * @retval `> 0` If e1 > e2.
  */
 int vstrcmp(const void *e1, const void *e2);
+
+/**
+ * @brief Compare two sizes.
+ * 
+ * @param e1, e2 Pointer to a size_t.
+ * @return `int` A number which indicates the result
+ * 
+ * @retval `< 0` If e1 < e2.
+ * @retval `0`   If e1 == e2.
+ * @retval `> 0` If e1 > e2.
+ */
+int sizecmp(const void *e1, const void *e2);
 
 #endif // _TESTAUX_H

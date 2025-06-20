@@ -10,7 +10,7 @@
  * 
  * @author bononeer (bonoe.neer@gmail.com)
  * @date 2025-06-17
- * @version 0.2
+ * @version 0.3
  * 
  * @copyright Copyright (c) 2025
  */
@@ -20,11 +20,13 @@
 
 #include "adt/stack.h"
 #include "adt/queue.h"
-// #include "adt/list.h"
+#include "adt/list.h"
 // #include "adt/sortlist.h"
 // #include "adt/map.h"
 // #include "adt/sortmap.h"
+// #include "adt/set.h"
 // #include "adt/pqueue.h"
+// #include "adt/unionfind.h"
 // #include "adt/graph.h"
 
 #endif // _ADT_H

@@ -104,3 +104,7 @@ int floatcmp(const void *e1, const void *e2) {
 int vstrcmp(const void *e1, const void *e2) {
     return strcmp((const char *) e1, (const char *) e2);
 }
+
+int sizecmp(const void *e1, const void *e2) {
+    return (int) (*(size_t *) e1 - *(size_t *) e2);
+}
