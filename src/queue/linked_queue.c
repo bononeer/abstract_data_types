@@ -74,7 +74,6 @@ void *queue_front(queue_t *queue) {
 /* ############################# Aux Operations ############################# */
 
 bool err_empty_queue(queue_t *queue) {
-    if (err_null_ptr(queue)) return true;
     if (!queue_is_empty(queue)) return false;
 
     errno = ENODATA;

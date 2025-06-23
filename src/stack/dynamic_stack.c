@@ -82,7 +82,6 @@ bool stack_resize(stack_t *stack, size_t new_capacity) {
 }
 
 bool err_empty_stack(stack_t *stack) {
-    if (err_null_ptr(stack)) return true;
     if (!stack_is_empty(stack)) return false;
 
     errno = ENODATA;

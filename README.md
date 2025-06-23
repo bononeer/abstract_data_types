@@ -1,6 +1,6 @@
 # Abstract Data Types
 
-[![Versión](https://img.shields.io/badge/versión-0.3-red)](https://github.com/tu-usuario/tu-repo/releases)
+[![version](https://img.shields.io/badge/version-0.3.1-red)](https://github.com/tu-usuario/tu-repo/releases)
 
 Repository for my Abstract Data types Library for C Language.
 

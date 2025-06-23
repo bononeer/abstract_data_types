@@ -1,5 +1,4 @@
 #include <stdio.h>
-#include <string.h>
 #include "adt/queue.h"
 #include "adt/stack.h"
 

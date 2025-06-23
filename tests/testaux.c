@@ -1,4 +1,3 @@
-#include <string.h>
 #include "testaux.h"
 
 #define MAX_BUFF 1024

@@ -9,8 +9,8 @@
  * When included, this file lets the user access all the ADTs at the same time.
  * 
  * @author bononeer (bonoe.neer@gmail.com)
- * @date 2025-06-17
- * @version 0.3
+ * @date 2025-06-24
+ * @version 0.3.1
  * 
  * @copyright Copyright (c) 2025
  */
@@ -22,7 +22,7 @@
 #include "adt/queue.h"
 #include "adt/list.h"
 // #include "adt/sortlist.h"
-// #include "adt/map.h"
+#include "adt/map.h"
 // #include "adt/sortmap.h"
 // #include "adt/set.h"
 // #include "adt/pqueue.h"

@@ -179,7 +179,6 @@ void *list_iter_remove(list_iterator_t *iter) {
 /* ############################# Aux Operations ############################# */
 
 bool err_empty_list(list_t *list) {
-    if (err_null_ptr(list)) return true;
     if (list_length(list) > 0) return false;
 
     errno = ENODATA;
@@ -187,7 +186,6 @@ bool err_empty_list(list_t *list) {
 }
 
 bool err_finsihed_list_iter(list_iterator_t *iter) {
-    if (err_null_ptr(iter)) return true;
     if (list_iter_has_next(iter)) return false;
     
     errno = ENODATA;
